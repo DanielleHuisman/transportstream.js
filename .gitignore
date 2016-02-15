@@ -1,0 +1,8 @@
+node_modules/
+
+*.log
+*.log.*
+
+dist/
+
+config.js

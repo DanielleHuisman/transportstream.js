@@ -1,0 +1,26 @@
+{
+  "name": "transportstream.js",
+  "description": "JavaScript MPEG transport stream player",
+  "version": "1.0.0",
+  "license": "ISC",
+  "author": "Daniel Huisman <daniel@huisman.me> (https://danielhuisman.io)",
+  "repository": "github:DanielHuisman/transportstream.js",
+  "keywords": [
+    "transport",
+    "stream",
+    "mpeg",
+    "browser"
+  ],
+  "scripts": {
+    "build": "browserify transportstream.js -o dist/transportstream.js",
+    "watch": "watchify transportstream.js -o dist/transportstream.js"
+  },
+  "dependencies": {
+    "hyperquest": "^1.2.0",
+    "through2": "^2.0.1"
+  },
+  "devDependencies": {
+    "browserify": "^13.0.0",
+    "watchify": "^3.7.0"
+  }
+}
