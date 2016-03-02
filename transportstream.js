@@ -11,7 +11,17 @@ stream.on('readable', function() {
     while (data !== null) {
         if (data) {
             var packet = readPacket(data);
-            if (counter < 10 && packet.hasPayload) {
+
+            if (packet.pid == 0) {
+                // TODO: PAT
+            } else if (packet.pid === 1) {
+                // TODO: CAT
+            } else if (packet.pid >= 32 && packet.pid <= 8186) {
+                // TODO: PMT
+            }
+
+            if (counter < 10 && packet.pid < 2) {
+                console.log(data);
                 console.log(readPacket(data));
             }
             counter++;
@@ -23,6 +33,9 @@ stream.on('readable', function() {
 }).on('error', function(err) {
     console.error(err);
 });
+
+// TODO: convert this whole thing to a series of (object ?) streams
+// raw byte stream --> 188 byte sized MPEG-TS packets --> Payload packets
 
 var readPacket = function(data) {
     var packet = {};
