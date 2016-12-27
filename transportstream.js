@@ -11,18 +11,21 @@ stream.on('readable', function() {
     while (data !== null) {
         if (data) {
             var packet = readPacket(data);
+            //console.log('id:', packet.pid);
 
-            if (packet.pid == 0) {
+            if (packet.pid === 0) {
                 // TODO: PAT
-            } else if (packet.pid === 1) {
+                console.log('PAT'); 
+           } else if (packet.pid === 1) {
                 // TODO: CAT
+                console.log('CAT');
             } else if (packet.pid >= 32 && packet.pid <= 8186) {
                 // TODO: PMT
             }
 
             if (counter < 10 && packet.pid < 2) {
-                console.log(data);
-                console.log(readPacket(data));
+                //console.log(data);
+                //console.log(readPacket(data));
             }
             counter++;
         }
@@ -41,6 +44,7 @@ var readPacket = function(data) {
     var packet = {};
 
     if (data.length < 188 || data[0] != 0x47) {
+        console.log('nope');
         return null;
     }
 
