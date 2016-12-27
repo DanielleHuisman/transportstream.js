@@ -1,6 +1,7 @@
 import CRC32 from 'crc-32';
 
 import {ParseError} from '../errors';
+import Parser from './Parser';
 
 export default class ParserPSI extends Parser {
     constructor() {

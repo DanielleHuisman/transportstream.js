@@ -1,4 +1,5 @@
 import {ParseError} from '../errors';
+import Parser fomr './Parser';
 
 export default class ParserTS extends Parser {
     constructor() {
@@ -97,6 +98,12 @@ export default class ParserTS extends Parser {
                     start += packet.adaptionExtensionLength;
                 }
             }
+        }
+
+        // Parse packet pointer
+        if (packet.payloadUnitStartIndicator) {
+            const fillerBytes = data[start];
+            start += 1 + fillerBytes;
         }
 
         // Parse packet payload
