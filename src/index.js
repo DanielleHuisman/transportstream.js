@@ -2,7 +2,7 @@ import through from 'through2';
 import hyperquest from 'hyperquest';
 
 import config from './config';
-import {ParserTS, ParserPSI, ParserPAT, ParserNIT, ParserPMT} from './parsers';
+import {ParserTS, ParserPSI, ParserPAT, ParserPMT, ParserNIT, ParserTDT} from './parsers';
 
 const stream = through();
 const inputStream = hyperquest.get(config.url);
@@ -11,8 +11,9 @@ inputStream.pipe(stream);
 const parserTS = new ParserTS();
 const parserPSI = new ParserPSI();
 const parserPAT = new ParserPAT();
-const parserNIT = new ParserNIT();
 const parserPMT = new ParserPMT();
+const parserNIT = new ParserNIT();
+const parserTDT = new ParserTDT();
 
 const programMapTables = {};
 let counter = 0;
@@ -30,7 +31,7 @@ stream.on('readable', () => {
                 // Program Association Table (PAT)
                 const packetPAT = parserPAT.parse(packetPSI.tableData);
 
-                console.log('PAT', packetTS, packetPSI, packetPAT);
+                console.log('PAT', packetPAT);
 
                 // Register program map tables
                 for (const program of packetPAT.programs) {
@@ -40,7 +41,12 @@ stream.on('readable', () => {
                 // Network Information Table (NIT)
                 const packetNIT = parserNIT.parse(packetPSI.tableData);
 
-                console.log('NIT', packetTS, packetPSI, packetNIT);
+                console.log('NIT', packetNIT);
+            } else if (packetTS.pid === 20 && packetPSI.tableId === 0x70) {
+                // Time and Date Table (TDT)
+                const packetTDT = parserTDT.parse(packetTDT.tableData);
+
+                console.log('TDT', packetTDT);
             } else if (packetPSI.tableId === 0x72) {
                 // Stuffing Table (ST)
             }
@@ -49,11 +55,11 @@ stream.on('readable', () => {
             const packetPSI = parserPSI.parse(packetTS.payload);
             const packetPMT = parserPMT.parse(packetPSI.tableData);
 
-            console.log('PMT', packetTS, packetPSI, packetPMT);
+            console.log('PMT', packetPMT);
         }
 
         // End stream after a few packets
-        if (counter > 1000) {
+        if (counter > 10000) {
             inputStream.destroy();
         } else {
             counter++;
