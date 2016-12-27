@@ -2,7 +2,7 @@ import through from 'through2';
 import hyperquest from 'hyperquest';
 
 import config from './config';
-import {ParserTS, ParserPSI, ParserPAT, ParserPMT, ParserNIT, ParserTDT} from './parsers';
+import {ParserTS, ParserPSI, ParserPAT, ParserPMT, ParserNIT, ParserTDT, ParserTOT} from './parsers';
 
 const stream = through();
 const inputStream = hyperquest.get(config.url);
@@ -14,6 +14,7 @@ const parserPAT = new ParserPAT();
 const parserPMT = new ParserPMT();
 const parserNIT = new ParserNIT();
 const parserTDT = new ParserTDT();
+const parserTOT = new ParserTOT();
 
 const programMapTables = {};
 let counter = 0;
@@ -27,28 +28,33 @@ stream.on('readable', () => {
             // Program Specific Information (PSI)
             const packetPSI = parserPSI.parse(packetTS.payload);
 
-            if (packetTS.pid === 0 && packetPSI.tableId === 0x00) {
+            if (packetTS.pid === 0x00 && packetPSI.tableId === 0x00) {
                 // Program Association Table (PAT)
                 const packetPAT = parserPAT.parse(packetPSI.tableData);
 
-                console.log('PAT', packetPAT);
+                // console.log('PAT', packetPAT);
 
                 // Register program map tables
                 for (const program of packetPAT.programs) {
                     programMapTables[program.pid] = true;
                 }
-            } else if (packetTS.pid === 16 && (packetPSI.tableId === 0x40 || packetPSI.tableId === 0x41)) {
+            } else if (packetTS.pid === 0x10 && (packetPSI.tableId === 0x40 || packetPSI.tableId === 0x41)) {
                 // Network Information Table (NIT)
                 const packetNIT = parserNIT.parse(packetPSI.tableData);
 
                 console.log('NIT', packetNIT);
-            } else if (packetTS.pid === 20 && packetPSI.tableId === 0x70) {
+            } else if (packetTS.pid === 0x14 && packetPSI.tableId === 0x70) {
                 // Time and Date Table (TDT)
-                const packetTDT = parserTDT.parse(packetTDT.tableData);
+                const packetTDT = parserTDT.parse(packetPSI.tableData);
 
                 console.log('TDT', packetTDT);
             } else if (packetPSI.tableId === 0x72) {
                 // Stuffing Table (ST)
+            } else if (packetTS.pid === 0x14 && packetPSI.tableId === 0x73) {
+                // Time Offset Table (TOT)
+                const packetTOT = parserTOT.parse(packetPSI.tableData);
+
+                console.log('TOT', packetTOT);
             }
         } else if (programMapTables[packetTS.pid]) {
             // Program Map Table (PMT)
