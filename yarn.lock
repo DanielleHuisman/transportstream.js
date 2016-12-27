@@ -389,7 +389,7 @@ concat-map@0.0.1:
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/concat-map/-/concat-map-0.0.1.tgz#d8a96bd77fd68df7793a73036a3ba0d5405d477b"
 
-concat-stream@~1.5.0, concat-stream@~1.5.1:
+concat-stream@, concat-stream@~1.5.0, concat-stream@~1.5.1:
   version "1.5.2"
   resolved "https://registry.yarnpkg.com/concat-stream/-/concat-stream-1.5.2.tgz#708978624d856af41a5a741defdd261da752c266"
   dependencies:
@@ -418,6 +418,14 @@ convert-source-map@~1.1.0:
 core-util-is@~1.0.0:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/core-util-is/-/core-util-is-1.0.2.tgz#b5fd54220aa2bc5ab57aab7140c940754503c1a7"
+
+crc-32@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/crc-32/-/crc-32-1.0.1.tgz#2efbddb7ccbb7beb4d181803b10e33a29c9fd214"
+  dependencies:
+    concat-stream ""
+    exit-on-epipe ""
+    printj ""
 
 create-ecdh@^4.0.0:
   version "4.0.0"
@@ -570,6 +578,10 @@ evp_bytestokey@^1.0.0:
   resolved "https://registry.yarnpkg.com/evp_bytestokey/-/evp_bytestokey-1.0.0.tgz#497b66ad9fef65cd7c08a6180824ba1476b66e53"
   dependencies:
     create-hash "^1.1.1"
+
+exit-on-epipe@:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/exit-on-epipe/-/exit-on-epipe-0.1.0.tgz#aa2f0155b78b34fe60dd2b462e84637ba5ed0697"
 
 expand-brackets@^0.1.4:
   version "0.1.5"
@@ -1228,6 +1240,10 @@ pinkie@^2.0.0:
 preserve@^0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/preserve/-/preserve-0.2.0.tgz#815ed1f6ebc65926f865b310c0713bcb3315ce4b"
+
+printj@:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/printj/-/printj-0.1.1.tgz#9d07ef9db9234da8659579e468bd46a7510489b0"
 
 process-nextick-args@~1.0.6:
   version "1.0.7"
