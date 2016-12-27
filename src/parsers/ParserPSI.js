@@ -1,8 +1,19 @@
 import CRC32 from 'crc-32';
 
-import {ParseError} from '../errors';
-import PacketPSI from '../packets/PacketPSI';
+import {PacketPSI, PSIDescriptor} from '../packets';
 import Parser from './Parser';
+
+export const parseDescriptor = (data, index) => {
+    // Initialize descriptor
+    const descriptor = new PSIDescriptor();
+
+    // Parse descriptor
+    descriptor.tag = data[index];
+    descriptor.length = data[index + 1];
+    descriptor.data = data.slice(index + 2, index + 2 + descriptor.length);
+
+    return descriptor;
+};
 
 export default class ParserPSI extends Parser {
     constructor() {

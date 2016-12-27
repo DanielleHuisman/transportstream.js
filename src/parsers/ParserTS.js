@@ -57,7 +57,7 @@ export default class ParserTS extends Parser {
                 if (packet.hasPCR) {
                     const pcr = data.slice(start, start + 6);
 
-                    packet.pcrBase = (pcr[0] << 25) | (pcr[1] << 17) | (pcr[ 2] << 9) | (pcr[3] << 1) | ((pcr[4] & 0x80) >> 7);
+                    packet.pcrBase = (pcr[0] << 25) | (pcr[1] << 17) | (pcr[2] << 9) | (pcr[3] << 1) | ((pcr[4] & 0x80) >> 7);
                     packet.pcrExtension = ((pcr[4] & 0x01) << 8) | pcr[5];
                     packet.pcr = packet.pcrBase * 300 + packet.pcrExtension;
 
@@ -68,7 +68,7 @@ export default class ParserTS extends Parser {
                 if (packet.hasOPCR) {
                     const opcr = data.slice(start, start + 6);
 
-                    packet.opcrBase = (opcr[0] << 25) | (opcr[1] << 17) | (opcr[ 2] << 9) | (opcr[3] << 1) | ((opcr[4] & 0x80) >> 7);
+                    packet.opcrBase = (opcr[0] << 25) | (opcr[1] << 17) | (opcr[2] << 9) | (opcr[3] << 1) | ((opcr[4] & 0x80) >> 7);
                     packet.opcrExtension = ((opcr[4] & 0x01) << 8) | opcr[5];
                     packet.opcr = packet.opcrBase * 300 + packet.opcrExtension;
 

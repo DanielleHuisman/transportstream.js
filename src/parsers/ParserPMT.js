@@ -1,20 +1,10 @@
-import PacketPMT, {PMTDescriptor, PMTStream} from '../packets/PacketPMT';
+import {PacketPMT, PMTStream} from '../packets';
+import {parseDescriptor} from './ParserPSI';
 import Parser from './Parser';
 
 export default class ParserPMT extends Parser {
     constructor() {
         super('PMT');
-    }
-
-    parseDescriptor(data, index) {
-        // Parse PMT descriptor
-        const descriptor = new PMTDescriptor();
-
-        descriptor.tag = data[index];
-        descriptor.length = data[index + 1];
-        descriptor.data = data.slice(index + 2, index + 2 + descriptor.length);
-
-        return descriptor;
     }
 
     parse(data) {
@@ -28,7 +18,7 @@ export default class ParserPMT extends Parser {
         let index = 4;
         while (index < packet.programInfoLength) {
             // Parse PMT descriptor
-            const descriptor = this.parseDescriptor(data, index);
+            const descriptor = parseDescriptor(data, index);
             packet.programDescriptors.push(descriptor);
 
             index += 2 + descriptor.length;
@@ -48,7 +38,7 @@ export default class ParserPMT extends Parser {
             let subindex = 0;
             while (subindex < stream.infoLength) {
                 // Parse elementary stream descriptor
-                const descriptor = this.parseDescriptor(data, index + subindex);
+                const descriptor = parseDescriptor(data, index + subindex);
                 stream.descriptors.push(descriptor);
 
                 subindex += 2 + descriptor.length;

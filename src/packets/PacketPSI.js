@@ -1,5 +1,11 @@
 import Packet from './Packet';
 
+export class PSIDescriptor {
+    tag = 0;
+    length = 0;
+    data = null;
+};
+
 export default class PacketPSI extends Packet {
     tableId = 0;
     syntaxSectionIndicator = false;

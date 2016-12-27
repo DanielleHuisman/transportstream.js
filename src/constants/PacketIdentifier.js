@@ -13,9 +13,9 @@ export default {
     21: 'NetworkSync',
     22: 'RNT',
     // 23-27: Reserved for future use
-    28: 'InbandSignaling'
-    29: 'Measurement'
-    30: 'DIT'
+    28: 'InbandSignaling',
+    29: 'Measurement',
+    30: 'DIT',
     31: 'SIT',
     // 32-8190: May be assigned as needed to Program Map Tables (PMT), elementary streams and other data tables.
     8191: 'NULL'

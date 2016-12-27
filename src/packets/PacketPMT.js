@@ -1,11 +1,5 @@
 import Packet from './Packet';
 
-export class PMTDescriptor {
-    tag = 0;
-    length = 0;
-    data = null;
-};
-
 export class PMTStream {
     type = 0;
     pid = 0;
