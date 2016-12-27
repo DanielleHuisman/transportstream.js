@@ -12,8 +12,8 @@
     "browser"
   ],
   "scripts": {
-    "build": "browserify transportstream.js -o dist/transportstream.js",
-    "watch": "watchify transportstream.js -o dist/transportstream.js"
+    "build": "browserify src/index.js -o dist/transportstream.js -t babelify",
+    "watch": "watchify src/index.js -o dist/transportstream.js -t babelify"
   },
   "dependencies": {
     "crc-32": "^1.0.1",
@@ -21,6 +21,9 @@
     "through2": "^2.0.1"
   },
   "devDependencies": {
+    "babel-preset-es2015": "^6.18.0",
+    "babel-preset-stage-0": "^6.16.0",
+    "babelify": "^7.3.0",
     "browserify": "^13.0.0",
     "watchify": "^3.7.0"
   }

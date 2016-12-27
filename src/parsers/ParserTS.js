@@ -1,5 +1,6 @@
 import {ParseError} from '../errors';
-import Parser fomr './Parser';
+import PacketTS from '../packets/PacketTS';
+import Parser from './Parser';
 
 export default class ParserTS extends Parser {
     constructor() {
@@ -92,8 +93,31 @@ export default class ParserTS extends Parser {
                 // Parse adaption extension
                 if (packet.hasAdaptionExtension) {
                     packet.adaptionExtensionLength = data[start];
+                    start++;
 
-                    // TODO: parse adaption extension
+                    const extension = data.slice(start, start + packet.adaptionExtensionLength);
+                    packet.hasLegalTimeWindow = (extension[0] & 0x80) !== 0;
+                    packet.hasPiecewiseRate = (extension[0] & 0x40) !== 0;
+                    packet.hasSeamlessSplice = (extension[0] & 0x20) !== 0;
+                    let index = 1;
+
+                    if (packet.hasLegalTimeWindow) {
+                        packet.isLegalTimeWindowValid = (extension[index] & 0x80) !== 0;
+                        packet.legalTimeWindowOffset = (extension[index] & 0x7f) << 8 | extension[index + 1];
+                        index += 2;
+                    }
+
+                    if (packet.hasPiecewiseRate) {
+                        packet.piecewiseRate = (extension[index] & 0x3f) << 16 | extension[index + 1] << 8 | extension[index];
+                        index += 3;
+                    }
+
+                    if (packet.hasSeamlessSplice) {
+                        packet.spliceType = (extension[index] & 0xf0) >> 4;
+                        packet.spliceDTS = extension.splice(index, index + 4);
+                        packet.spliceDTS[0] &= 0x0e;
+                        index += 5;
+                    }
 
                     start += packet.adaptionExtensionLength;
                 }
@@ -102,8 +126,8 @@ export default class ParserTS extends Parser {
 
         // Parse packet pointer
         if (packet.payloadUnitStartIndicator) {
-            const fillerBytes = data[start];
-            start += 1 + fillerBytes;
+            packet.fillerBytes = data[start];
+            start += 1 + packet.fillerBytes;
         }
 
         // Parse packet payload

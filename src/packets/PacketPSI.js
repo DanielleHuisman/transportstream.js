@@ -1,6 +1,8 @@
+import Packet from './Packet';
+
 export default class PacketPSI extends Packet {
     tableId = 0;
-    sectionSyntaxIndicator = false;
+    syntaxSectionIndicator = false;
     privateBit = false;
     sectionLength = 0;
     tableIdExtension = 0;

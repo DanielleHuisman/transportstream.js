@@ -1,4 +1,7 @@
+import Packet from './Packet';
+
 export default class PacketTS extends Packet {
+    // Packet header
     errorIndicator = false;
     payloadUnitStartIndicator = false;
     priority = false;
@@ -8,6 +11,7 @@ export default class PacketTS extends Packet {
     hasPayload = false;
     continuityCounter = 0;
 
+    // Adaption field
     adaptionLength = 0;
     discontinuityIndicator = false;
     randomAccessInicator = false;
@@ -30,6 +34,19 @@ export default class PacketTS extends Packet {
     privateData = null;
     adaptionExtension = null;
 
+    // Adaption extension field
+    hasLegalTimeWindow = false;
+    hasPiecewiseRate = false;
+    hasSeamlessSplice = false;
+
+    isLegalTimeWindowValid = false;
+    legalTimeWindowOffset = 0;
+    piecewiseRate = 0;
+    spliceType = 0;
+    spliceDTS = null;
+
+    // Packet payload
+    fillerBytes = 0;
     payload = null;
 
     constructor(data) {
