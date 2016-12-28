@@ -14,6 +14,34 @@ const split = (data, start, size, func) => {
 };
 
 const descriptors = {
+    AC3_descriptor: (desc, data) => {
+        const result = {
+            hasComponentType: (data[0] & 0x80) !== 0,
+            hasBsid: (data[0] & 0x40) !== 0,
+            hasMainId: (data[0] & 0x20) !== 0,
+            hasAsvc: (data[0] & 0x10) !== 0
+        };
+
+        let start = 1;
+        if (result.hasComponentType) {
+            result.componentType = data[start];
+            start++;
+        }
+        if (result.hasBsid) {
+            result.bsid = data[start];
+            start++;
+        }
+        if (result.hasMainId) {
+            result.mainid = data[start];
+            start++;
+        }
+        if (result.hasAsvc) {
+            result.asvc = data[start];
+            start++;
+        }
+        result.additionalInfo = data.slice(start, data.length);
+        return result;
+    },
     component_descriptor: (desc, data) => ({
         streamContentExt: (data[0] & 0xf0) >> 4,
         streamContent: data[0] & 0x0f,
@@ -32,6 +60,50 @@ const descriptors = {
         availaiityFlag: d[0] & 0x80 !== 0,
         countryCodes: split(d, 1, 3, (data, i) => stringify(data.slice(i, i + 3)))
     }),
+    enhanced_AC3_descriptor: (desc, data) => {
+        const result = {
+            hasComponentType: (data[0] & 0x80) !== 0,
+            hasBsid: (data[0] & 0x40) !== 0,
+            hasMainId: (data[0] & 0x20) !== 0,
+            hasAsvc: (data[0] & 0x10) !== 0,
+            hasMixInfo: (data[1] & 0x08) !== 0,
+            hasSubstream1: (data[1] & 0x04) !== 0,
+            hasSubstream2: (data[1] & 0x02) !== 0,
+            hasSubstream3: (data[1] & 0x01) !== 0
+        };
+
+        let start = 1;
+        if (result.hasComponentType) {
+            result.componentType = data[start];
+            start++;
+        }
+        if (result.hasBsid) {
+            result.bsid = data[start];
+            start++;
+        }
+        if (result.hasMainId) {
+            result.mainid = data[start];
+            start++;
+        }
+        if (result.hasAsvc) {
+            result.asvc = data[start];
+            start++;
+        }
+        if (result.hasSubstream1) {
+            result.substream1 = data[start];
+            start++;
+        }
+        if (result.hasSubstream2) {
+            result.substream2 = data[start];
+            start++;
+        }
+        if (result.hasSubstream3) {
+            result.substream3 = data[start];
+            start++;
+        }
+        result.additionalInfo = data.slice(start, data.length);
+        return result;
+    },
     frequency_list_descriptor: (desc, d) => ({
         codingType: d[0] & 0x3,
         frequencies: split(d, 1, 4, (data, i) => data[i] << 24 | data[i + 1] << 16 | data[i + 2] << 8 | data[i +3])
@@ -71,7 +143,14 @@ export default class ParserDescriptor extends Parser {
         // Parse descriptor
         const parser = descriptors[DESCRIPTORS[descriptor.tag]];
         if (parser) {
+            console.log('parsed:', DESCRIPTORS[descriptor.tag]);
             descriptor.parsedData = parser(descriptor, descriptor.data);
+        } else {
+            if (DESCRIPTORS[descriptor.tag]) {
+                console.warn(`No descriptor parser for: ${DESCRIPTORS[descriptor.tag]}`);
+            } else {
+                console.warn(`No descriptor entry for: 0x${descriptor.tag < 16 ? '0' : ''}${descriptor.tag.toString(16).toUpperCase()}`);
+            }
         }
     }
 };

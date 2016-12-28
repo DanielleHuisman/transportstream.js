@@ -6,3 +6,4 @@ export {default as ParserPMT} from './ParserPMT';
 export {default as ParserNIT} from './ParserNIT';
 export {default as ParserTDT} from './ParserTDT';
 export {default as ParserTOT} from './ParserTOT';
+export {default as ParserDescriptor} from './ParserDescriptor';

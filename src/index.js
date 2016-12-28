@@ -2,7 +2,7 @@ import through from 'through2';
 import hyperquest from 'hyperquest';
 
 import config from './config';
-import {ParserTS, ParserPSI, ParserPAT, ParserPMT, ParserNIT, ParserTDT, ParserTOT} from './parsers';
+import {ParserTS, ParserPSI, ParserPAT, ParserPMT, ParserNIT, ParserTDT, ParserTOT, ParserDescriptor} from './parsers';
 
 const stream = through();
 const inputStream = hyperquest.get(config.url);
@@ -15,6 +15,7 @@ const parserPMT = new ParserPMT();
 const parserNIT = new ParserNIT();
 const parserTDT = new ParserTDT();
 const parserTOT = new ParserTOT();
+const parserDescriptor = new ParserDescriptor();
 
 const programMapTables = {};
 let counter = 0;
@@ -60,6 +61,12 @@ stream.on('readable', () => {
             // Program Map Table (PMT)
             const packetPSI = parserPSI.parse(packetTS.payload);
             const packetPMT = parserPMT.parse(packetPSI.tableData);
+
+            // Parse descriptors
+            packetPMT.programDescriptors.forEach((descriptor) => parserDescriptor.parse(descriptor));
+            packetPMT.streams.forEach((stream) => {
+                stream.descriptors.forEach((descriptor) => parserDescriptor.parse(descriptor));
+            });
 
             console.log('PMT', packetPMT);
         }

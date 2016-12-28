@@ -41,7 +41,7 @@ export const DESCRIPTORS = {
     0x67: 'transport_stream_descriptor',
     0x68: 'DSNG_descriptor',
     0x69: 'PDC_descriptor',
-    0x6A: 'AC-3_descriptor',
+    0x6A: 'AC3_descriptor',
     0x6B: 'ancillary_data_descriptor',
     0x6C: 'cell_list_descriptor',
     0x6D: 'cell_frequency_link_descriptor',
@@ -57,7 +57,7 @@ export const DESCRIPTORS = {
     0x77: 'time_slice_fec_identifier_descriptor', // EN 301 192
     0x78: 'ECM_repetition_rate_descriptor', // EN 301 192
     0x79: 'S2_satellite_delivery_system_descriptor',
-    0x7A: 'enhanced_AC-3_descriptor',
+    0x7A: 'enhanced_AC3_descriptor',
     0x7B: 'DTS_descriptor',
     0x7C: 'AAC_descriptor',
     0x7D: 'XAIT_location_descriptor',
