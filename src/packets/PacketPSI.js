@@ -4,6 +4,7 @@ export class PSIDescriptor {
     tag = 0;
     length = 0;
     data = null;
+    parsedData = null;
 };
 
 export default class PacketPSI extends Packet {
