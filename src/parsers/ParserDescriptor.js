@@ -3,6 +3,7 @@ import {ParseError} from '../errors';
 import {PSIDescriptor} from '../packets';
 import Parser from './Parser';
 
+// TODO: use the proper encoding
 const stringify = (data) => data.map((char) => String.fromCharCode(char)).join('');
 
 const split = (data, start, size, func) => {
@@ -143,13 +144,17 @@ export default class ParserDescriptor extends Parser {
         // Parse descriptor
         const parser = descriptors[DESCRIPTORS[descriptor.tag]];
         if (parser) {
-            console.log('parsed:', DESCRIPTORS[descriptor.tag]);
             descriptor.parsedData = parser(descriptor, descriptor.data);
+            console.log('parsed:', DESCRIPTORS[descriptor.tag], descriptor.parsedData);
         } else {
             if (DESCRIPTORS[descriptor.tag]) {
                 console.warn(`No descriptor parser for: ${DESCRIPTORS[descriptor.tag]}`);
             } else {
-                console.warn(`No descriptor entry for: 0x${descriptor.tag < 16 ? '0' : ''}${descriptor.tag.toString(16).toUpperCase()}`);
+                if (!descriptor.tag) {
+                    console.warn(`Descriptor has no tag`, descriptor);
+                } else {
+                    console.warn(`No descriptor entry for: 0x${descriptor.tag < 16 ? '0' : ''}${descriptor.tag.toString(16).toUpperCase()}`);
+                }
             }
         }
     }
