@@ -43,7 +43,13 @@ stream.on('readable', () => {
                 // Network Information Table (NIT)
                 const packetNIT = parserNIT.parse(packetPSI.tableData);
 
-                console.log('NIT', packetNIT);
+                // Parse descriptors
+                packetNIT.descriptors.forEach((descriptor) => parserDescriptor.parse(descriptor));
+                packetNIT.streams.forEach((stream) => {
+                    stream.descriptors.forEach((descriptor) => parserDescriptor.parse(descriptor));
+                });
+
+                console.log('NIT', packetNIT, packetPSI);
             } else if (packetTS.pid === 0x14 && packetPSI.tableId === 0x70) {
                 // Time and Date Table (TDT)
                 const packetTDT = parserTDT.parse(packetPSI.tableData);
@@ -68,7 +74,7 @@ stream.on('readable', () => {
                 stream.descriptors.forEach((descriptor) => parserDescriptor.parse(descriptor));
             });
 
-            console.log('PMT', packetPMT);
+            console.log('PMT', packetPMT, packetPSI);
         }
 
         // End stream after a few packets
