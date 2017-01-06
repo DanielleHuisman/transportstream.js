@@ -1,3 +1,10 @@
+export const mergeUint8Arrays = (array1, array2) => {
+    const buffer = new Uint8Array(array1.length + array2.length);
+    buffer.set(array1, 0);
+    buffer.set(array2, array1.length);
+    return buffer;
+};
+
 export const parseDatetime = (data, index) => {
     // Parse date
     const mjd = data[index] << 8 | data[index + 1];

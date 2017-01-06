@@ -1,6 +1,8 @@
 // Reference: https://www.dvb.org/resources/public/standards/a38_dvb-si_specification.pdf
 
-export default {
+export const NULL_PACKET = 8191;
+
+export const PACKET_IDENTIFIERS = {
     0: 'PAT',
     1: 'CAT',
     2: 'TSDT',
