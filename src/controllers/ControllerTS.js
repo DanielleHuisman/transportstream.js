@@ -1,7 +1,7 @@
 import through from 'through2';
 
 import {PACKET_IDENTIFIERS, NULL_PACKET} from '../constants';
-import {ParserTS, tableParsers} from '../parsers';
+import {ParserTS, ParserPSI, tableParsers} from '../parsers';
 import {mergeUint8Arrays} from '../util';
 import Controller from './Controller';
 
@@ -10,10 +10,12 @@ export default class ControllerTS extends Controller {
     maxPackets = -1;
 
     parser = new ParserTS();
+    parserPSI = new ParserPSI();
     packetCounter = 0;
     _packetStream = through();
     _pidBuffers = {};
     _pidStreams = {};
+    _programMapTable = {};
 
     constructor(stream, maxPackets) {
         super('TS');
@@ -92,10 +94,20 @@ export default class ControllerTS extends Controller {
     }
 
     handlePID(pid) {
-        if (PACKET_IDENTIFIERS[pid]) {
-            // TODO: create stream reader for PSI parser and afterwards for the table specific parser
+        if (PACKET_IDENTIFIERS[pid] || this._programMapTable[pid]) {
+            this.getStream(pid).on('readable', this.handleTable.bind(this, pid));
         }
+    }
 
-        // TODO: look up pid in PAT table to check for PMT
+    handleTable(pid) {
+        const stream = this.getStream(pid);
+        let data = null;
+
+        while ((data = stream.read(1)) !== null) {
+            // Parse PSI table headers
+            const packetPSI = this.parserPSI.parse(data);
+
+            // TODO: specific parsing
+        }
     }
 }
