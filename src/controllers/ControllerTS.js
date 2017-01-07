@@ -1,6 +1,6 @@
 import through from 'through2';
 
-import {PACKET_IDENTIFIERS, NULL_PACKET, TABLE_IDENTIFIERS} from '../constants';
+import {PACKET_LENGTH, PACKET_IDENTIFIERS, NULL_PACKET, TABLE_IDENTIFIERS} from '../constants';
 import {PacketPAT} from '../packets';
 import {ParserTS, ParserPSI, tableParsers} from '../parsers';
 import {mergeUint8Arrays} from '../util';
@@ -13,7 +13,7 @@ export default class ControllerTS extends Controller {
     parser = new ParserTS();
     parserPSI = new ParserPSI();
     packetCounter = 0;
-    _packetStream = through();
+    _packetStream = through.obj();
     _pidBuffers = {};
     _pidStreams = {};
     _programMapTables = {};
@@ -29,52 +29,61 @@ export default class ControllerTS extends Controller {
             let data = null;
 
             // Read packets until the stream ends
-            while ((data = this.stream.read(188)) !== null) {
-                // Parse Transport Stream packet
-                const packetTS = this.parser.parse(data);
-
-                // Push the parsed packet to the packet stream
-                this._packetStream.push(packetTS);
-
-                // Stop parsing payload if it's a null packet
-                if (packetTS.pid === NULL_PACKET) {
-                    return;
-                }
-
-                // Create the PID buffer and stream if they don't already exist
-                if (!this._pidStreams[packetTS.pid]) {
-                    this._pidBuffers[packetTS.pid] = new Uint8Array();
-                    this._pidStreams[packetTS.pid] = through.obj();
-
-                    // Emit event
-                    this.emit('pid', packetTS.pid);
-                }
-
-                // If a new payload starts parse the PID buffer and push the result to the PID stream
-                if (packetTS.payloadUnitStartIndicator && this._pidBuffers[packetTS.pid].length > 0) {
-                    // Parse the packet
-                    const packet = this.parsePacket(this._pidBuffers[packetTS.pid]);
-
-                    // Handle certain packets ourselves before passing them on
-                    if (packet instanceof PacketPAT) {
-                        this.handlePAT(packet);
+            while ((data = this.stream.read(PACKET_LENGTH)) !== null) {
+                try {
+                    // Discard incomplete packets
+                    if (data.length < PACKET_LENGTH) {
+                        return;
                     }
 
-                    // Push the packet to the PID stream
-                    this._pidStreams[packetTS.pid].push(packet);
-                    this._pidBuffers[packetTS.pid] = new Uint8Array();
-                }
+                    // Parse Transport Stream packet
+                    const packetTS = this.parser.parse(data);
 
-                // Append the packet payload to the PID buffer
-                if (packetTS.payload) {
-                    this._pidBuffers[packetTS.pid] = mergeUint8Arrays(this._pidBuffers[packetTS.pid], packetTS.payload);
-                }
+                    // Push the parsed packet to the packet stream
+                    this._packetStream.push(packetTS);
 
-                // End stream after a few packets
-                if (this.maxPackets >= 0 && this.packetCounter > this.maxPackets) {
-                    this.stream.destroy();
-                } else {
-                    this.packetCounter++;
+                    // Stop parsing payload if it's a null packet
+                    if (packetTS.pid === NULL_PACKET) {
+                        return;
+                    }
+
+                    // Create the PID buffer and stream if they don't already exist
+                    if (!this._pidStreams[packetTS.pid]) {
+                        this._pidBuffers[packetTS.pid] = new Uint8Array();
+                        this._pidStreams[packetTS.pid] = through.obj();
+
+                        // Emit event
+                        this.emit('pid', packetTS.pid);
+                    }
+
+                    // If a new payload starts parse the PID buffer and push the result to the PID stream
+                    if (packetTS.payloadUnitStartIndicator && this._pidBuffers[packetTS.pid].length > 0) {
+                        // Parse the packet
+                        const packet = this.parsePacket(packetTS.pid, this._pidBuffers[packetTS.pid]);
+
+                        // Handle certain packets ourselves before passing them on
+                        if (packet instanceof PacketPAT) {
+                            this.handlePAT(packet);
+                        }
+
+                        // Push the packet to the PID stream
+                        this._pidStreams[packetTS.pid].push(packet);
+                        this._pidBuffers[packetTS.pid] = new Uint8Array();
+                    }
+
+                    // Append the packet payload to the PID buffer
+                    if (packetTS.payload) {
+                        this._pidBuffers[packetTS.pid] = mergeUint8Arrays(this._pidBuffers[packetTS.pid], packetTS.payload);
+                    }
+
+                    // End stream after a few packets
+                    if (this.maxPackets >= 0 && this.packetCounter > this.maxPackets) {
+                        this.stream.destroy();
+                    } else {
+                        this.packetCounter++;
+                    }
+                } catch (err) {
+                    console.error(err);
                 }
             }
         }).on('end', () => {
@@ -124,7 +133,7 @@ export default class ControllerTS extends Controller {
             // Check if this PID is allowed to contain the table
             if (pid >= 32 || (PACKET_IDENTIFIERS[pid] && PACKET_IDENTIFIERS[pid].indexOf(table) !== -1)) {
                 // Parse packet
-                return tableParsers[TABLE_IDENTIFIERS[packetPSI.tableId]].parse(packetPSI.tableData);
+                return tableParsers[table].parse(packetPSI.tableData);
             }
         }
 

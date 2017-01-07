@@ -68,7 +68,7 @@ for (let i = 0x60; i <= 0x6F; i++) {
 
 // Generate table identifiers from descriptions and types
 const TABLE_IDENTIFIERS = {};
-for (const [key, value] of TABLE_DESCRIPTIONS) {
+for (const [key, value] of Object.entries(TABLE_DESCRIPTIONS)) {
     TABLE_IDENTIFIERS[key] = TABLE_TYPES[value[0]];
 }
 export {TABLE_IDENTIFIERS};

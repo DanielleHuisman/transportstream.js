@@ -1,3 +1,4 @@
+import {PACKET_LENGTH, PACKET_SYNC_BYTE} from '../constants';
 import {ParseError} from '../errors';
 import PacketTS from '../packets/PacketTS';
 import Parser from './Parser';
@@ -9,13 +10,13 @@ export default class ParserTS extends Parser {
 
     parse(data) {
         // Validate packet length
-        if (data.length !== 188) {
-            throw new ParseError(this, `Invalid packet length (${data.length}), should be 188 bytes`);
+        if (data.length !== PACKET_LENGTH) {
+            throw new ParseError(this, `Invalid packet length (${data.length}), should be ${PACKET_LENGTH} bytes`);
         }
 
         // Validate first byte
-        if (data[0] !== 0x47) {
-            throw new ParseError(this, `Invalid first byte (${data[0].toString(16)}), should be 0x47`);
+        if (data[0] !== PACKET_SYNC_BYTE) {
+            throw new ParseError(this, `Invalid first byte (${data[0].toString(16)}), should be 0x${PACKET_SYNC_BYTE.toString(16)}`);
         }
 
         // Initialize packet

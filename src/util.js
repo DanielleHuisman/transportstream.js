@@ -5,6 +5,10 @@ export const mergeUint8Arrays = (array1, array2) => {
     return buffer;
 };
 
+export const toHexByte = (byte) => {
+    return `0x${byte < 16 ? '0' : ''}${byte.toString(16).toUpperCase()}`;
+};
+
 export const parseDatetime = (data, index) => {
     // Parse date
     const mjd = data[index] << 8 | data[index + 1];

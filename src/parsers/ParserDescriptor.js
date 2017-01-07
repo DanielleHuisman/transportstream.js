@@ -1,6 +1,7 @@
 import {DESCRIPTORS} from '../constants';
 import {ParseError} from '../errors';
 import {PSIDescriptor} from '../packets';
+import {toHexByte} from '../util';
 import Parser from './Parser';
 
 // TODO: use the proper encoding
@@ -153,7 +154,7 @@ export default class ParserDescriptor extends Parser {
                 if (!descriptor.tag) {
                     console.warn(`Descriptor has no tag`, descriptor);
                 } else {
-                    console.warn(`No descriptor entry for: 0x${descriptor.tag < 16 ? '0' : ''}${descriptor.tag.toString(16).toUpperCase()}`);
+                    console.warn(`No descriptor entry for: ${toHexByte(descriptor.tag)}`);
                 }
             }
         }
