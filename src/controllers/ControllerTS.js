@@ -1,6 +1,7 @@
 import through from 'through2';
 
-import {PACKET_IDENTIFIERS, NULL_PACKET} from '../constants';
+import {PACKET_IDENTIFIERS, NULL_PACKET, TABLE_IDENTIFIERS} from '../constants';
+import {PacketPAT} from '../packets';
 import {ParserTS, ParserPSI, tableParsers} from '../parsers';
 import {mergeUint8Arrays} from '../util';
 import Controller from './Controller';
@@ -15,7 +16,7 @@ export default class ControllerTS extends Controller {
     _packetStream = through();
     _pidBuffers = {};
     _pidStreams = {};
-    _programMapTable = {};
+    _programMapTables = {};
 
     constructor(stream, maxPackets) {
         super('TS');
@@ -45,16 +46,22 @@ export default class ControllerTS extends Controller {
                     this._pidBuffers[packetTS.pid] = new Uint8Array();
                     this._pidStreams[packetTS.pid] = through.obj();
 
-                    // Handle new PID stream
-                    this.handlePID();
-
                     // Emit event
                     this.emit('pid', packetTS.pid);
                 }
 
-                // If a new payload starts push the PID buffer to the PID stream
+                // If a new payload starts parse the PID buffer and push the result to the PID stream
                 if (packetTS.payloadUnitStartIndicator && this._pidBuffers[packetTS.pid].length > 0) {
-                    this._pidStreams[packetTS.pid].push(this._pidBuffers[packetTS.pid]);
+                    // Parse the packet
+                    const packet = this.parsePacket(this._pidBuffers[packetTS.pid]);
+
+                    // Handle certain packets ourselves before passing them on
+                    if (packet instanceof PacketPAT) {
+                        this.handlePAT(packet);
+                    }
+
+                    // Push the packet to the PID stream
+                    this._pidStreams[packetTS.pid].push(packet);
                     this._pidBuffers[packetTS.pid] = new Uint8Array();
                 }
 
@@ -93,21 +100,42 @@ export default class ControllerTS extends Controller {
         return this._pidStreams[pid];
     }
 
-    handlePID(pid) {
-        if (PACKET_IDENTIFIERS[pid] || this._programMapTable[pid]) {
-            this.getStream(pid).on('readable', this.handleTable.bind(this, pid));
-        }
+    getProgramMapTables() {
+        return this._programMapTables;
     }
 
-    handleTable(pid) {
-        const stream = this.getStream(pid);
-        let data = null;
+    parsePacket(pid, data) {
+        // Check if the packet is a PSI table
+        if (PACKET_IDENTIFIERS[pid] || this._programMapTables[pid]) {
+            return this.parseTable(pid, data);
+        }
 
-        while ((data = stream.read(1)) !== null) {
-            // Parse PSI table headers
-            const packetPSI = this.parserPSI.parse(data);
+        // Unsupported packet, return raw data
+        return data;
+    }
 
-            // TODO: specific parsing
+    parseTable(pid, data) {
+        // Parse PSI table headers
+        const packetPSI = this.parserPSI.parse(data);
+
+        // Find table specific parser
+        const table = TABLE_IDENTIFIERS[packetPSI.tableId];
+        if (table && tableParsers[table]) {
+            // Check if this PID is allowed to contain the table
+            if (pid >= 32 || (PACKET_IDENTIFIERS[pid] && PACKET_IDENTIFIERS[pid].indexOf(table) !== -1)) {
+                // Parse packet
+                return tableParsers[TABLE_IDENTIFIERS[packetPSI.tableId]].parse(packetPSI.tableData);
+            }
+        }
+
+        // Unsupported packet, return raw data
+        return data;
+    }
+
+    handlePAT(packet) {
+        // Register programs in the Program Map Table
+        for (const program of packet.programs) {
+            this._programMapTables[program.pid] = program.number;
         }
     }
 }

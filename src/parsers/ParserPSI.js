@@ -2,6 +2,10 @@ import CRC32 from 'crc-32';
 
 import {PacketPSI, PSIDescriptor} from '../packets';
 import Parser from './Parser';
+import ParserDescriptor from './ParserDescriptor';
+
+// Initialize descriptor parser
+const parserDescriptor = new ParserDescriptor();
 
 export const parseDescriptor = (data, index) => {
     // Initialize descriptor
@@ -11,6 +15,9 @@ export const parseDescriptor = (data, index) => {
     descriptor.tag = data[index];
     descriptor.length = data[index + 1];
     descriptor.data = data.slice(index + 2, index + 2 + descriptor.length);
+
+    // Parse descriptor specific data
+    parserDescriptor.parse(descriptor);
 
     return descriptor;
 };
@@ -48,6 +55,9 @@ export default class ParserPSI extends Parser {
 
             // Calculate checksum
             const checksum = CRC32.buf(data.slice(0, data.length - 4));
+            if (packet.crc32 === checksum) {
+                console.log('CHECKSUM success');
+            }
             if (packet.crc32 !== checksum) {
                 // throw new ParseError(this, `Invalid CRC32 checksum: ${packet.crc32} (received) !== ${checksum} (calculated)`);
             }

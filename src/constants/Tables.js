@@ -65,3 +65,10 @@ for (let i = 0x50; i <= 0x5f; i++) {
 for (let i = 0x60; i <= 0x6F; i++) {
     TABLE_DESCRIPTIONS[i] = ['event_information_section', 'other_transport_stream', 'schedule'];
 }
+
+// Generate table identifiers from descriptions and types
+const TABLE_IDENTIFIERS = {};
+for (const [key, value] of TABLE_DESCRIPTIONS) {
+    TABLE_IDENTIFIERS[key] = TABLE_TYPES[value[0]];
+}
+export {TABLE_IDENTIFIERS};

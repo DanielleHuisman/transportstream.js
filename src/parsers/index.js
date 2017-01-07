@@ -10,17 +10,22 @@ import ParserPMT from './ParserPMT';
 
 // Export a map of Service Information Table parsers
 export const tableParsers = {
-    PAT: ParserPAT,
-    NIT: ParserNIT,
-    TDT: ParserTDT,
-    TOT: ParserTOT,
-    PMT: ParserPMT
+    PAT: new ParserPAT(),
+    NIT: new ParserNIT(),
+    TDT: new ParserTDT(),
+    TOT: new ParserTOT(),
+    PMT: new ParserPMT()
 };
 
-// Export other parser
+// Export parsers
 export {
     Parser,
     ParserTS,
     ParserPSI,
-    ParserDescriptor
+    ParserDescriptor,
+    ParserPAT,
+    ParserNIT,
+    ParserTDT,
+    ParserTOT,
+    ParserPMT
 };
