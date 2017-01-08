@@ -1,3 +1,5 @@
+import iconv from 'iconv-lite';
+
 export const mergeUint8Arrays = (array1, array2) => {
     const buffer = new Uint8Array(array1.length + array2.length);
     buffer.set(array1, 0);
@@ -5,8 +7,31 @@ export const mergeUint8Arrays = (array1, array2) => {
     return buffer;
 };
 
+export const toHex = (input, length = -1) => {
+    const str = input.toString(16).toUpperCase();
+    if (length >= 0) {
+        return str.padStart(length, '0');
+    }
+    return str;
+};
+
 export const toHexByte = (byte) => {
     return `0x${byte < 16 ? '0' : ''}${byte.toString(16).toUpperCase()}`;
+};
+
+export const stringifyDvb = (data) => {
+    if (data[0] == 0xE0 && data[1] >= 0x80 && data[1] <= 0x9F) {
+        // TODO: two byte control codes
+    } else if (data[0] >= 0x80 && data[0] <= 0x9F) {
+        // TODO: one byte control codes
+    }
+
+    // TODO: default encoding is ISO/IEC 6937
+    let result = '';
+    data.forEach((value) => {
+        result += String.fromCharCode(value);
+    });
+    return result;
 };
 
 export const parseDatetime = (data, index) => {

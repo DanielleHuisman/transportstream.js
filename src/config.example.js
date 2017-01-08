@@ -1,3 +1,3 @@
 export default {
-    url: 'http://example.org/teststream',
+    url: 'http://example.org/teststream'
 };

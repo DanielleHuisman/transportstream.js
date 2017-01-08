@@ -7,7 +7,7 @@ import ParserDescriptor from './ParserDescriptor';
 // Initialize descriptor parser
 const parserDescriptor = new ParserDescriptor();
 
-export const parseDescriptor = (data, index) => {
+export const parseDescriptor = (data, index, ...args) => {
     // Initialize descriptor
     const descriptor = new PSIDescriptor();
 
@@ -17,7 +17,7 @@ export const parseDescriptor = (data, index) => {
     descriptor.data = data.slice(index + 2, index + 2 + descriptor.length);
 
     // Parse descriptor specific data
-    parserDescriptor.parse(descriptor);
+    parserDescriptor.parse(descriptor, ...args);
 
     return descriptor;
 };

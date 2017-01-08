@@ -19,6 +19,7 @@
   "dependencies": {
     "crc-32": "^1.0.1",
     "hyperquest": "^1.2.0",
+    "iconv-lite": "^0.4.15",
     "through2": "^2.0.1"
   },
   "devDependencies": {

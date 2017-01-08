@@ -133,7 +133,9 @@ export default class ControllerTS extends Controller {
             // Check if this PID is allowed to contain the table
             if (pid >= 32 || (PACKET_IDENTIFIERS[pid] && PACKET_IDENTIFIERS[pid].indexOf(table) !== -1)) {
                 // Parse packet
-                return tableParsers[table].parse(packetPSI.tableData);
+                const packet = tableParsers[table].parse(packetPSI.tableData);
+                packet.parent = packetPSI;
+                return packet;
             }
         }
 

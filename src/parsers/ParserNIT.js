@@ -17,14 +17,14 @@ export default class ParserNIT extends Parser {
         let index = 2;
         while (index < packet.descriptorLength) {
             // Parse NIT descriptor
-            const descriptor = parseDescriptor(data, index);
+            const descriptor = parseDescriptor(data, index, 'NIT');
             packet.descriptors.push(descriptor);
 
             index += 2 + descriptor.length;
         }
 
         packet.streamLength = (data[index] & 0x0f) << 8 | data[index + 1];
-        index++;
+        index += 2;
 
         // Loop over NIT streams
         while (index < packet.streamLength) {
@@ -40,7 +40,7 @@ export default class ParserNIT extends Parser {
             let subindex = 0;
             while (subindex < stream.descriptorLength) {
                 // Parse NIT stream descriptor
-                const descriptor = parseDescriptor(data, index + subindex);
+                const descriptor = parseDescriptor(data, index + subindex, 'NIT');
                 stream.descriptors.push(descriptor);
 
                 subindex += 2 + descriptor.length;
