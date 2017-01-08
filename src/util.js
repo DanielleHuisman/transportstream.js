@@ -10,9 +10,9 @@ export const mergeUint8Arrays = (array1, array2) => {
 export const toHex = (input, length = -1) => {
     const str = input.toString(16).toUpperCase();
     if (length >= 0) {
-        return str.padStart(length, '0');
+        return '0x' + str.padStart(length, '0');
     }
-    return str;
+    return '0x' + str;
 };
 
 export const toHexByte = (byte) => {

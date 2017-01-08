@@ -6,3 +6,4 @@ export {default as PacketPMT, PMTStream} from './PacketPMT';
 export {default as PacketNIT, NITStream} from './PacketNIT';
 export {default as PacketTDT} from './PacketTDT';
 export {default as PacketTOT} from './PacketTOT';
+export {default as PacketPES} from './PacketPES';

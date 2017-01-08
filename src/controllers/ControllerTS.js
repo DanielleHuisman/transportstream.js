@@ -1,7 +1,7 @@
 import through from 'through2';
 
 import {PACKET_LENGTH, PACKET_IDENTIFIERS, NULL_PACKET, TABLE_IDENTIFIERS} from '../constants';
-import {PacketPAT} from '../packets';
+import {PacketPAT, PacketPMT} from '../packets';
 import {ParserTS, ParserPSI, tableParsers} from '../parsers';
 import {mergeUint8Arrays} from '../util';
 import Controller from './Controller';
@@ -65,6 +65,8 @@ export default class ControllerTS extends Controller {
                         // Handle certain packets ourselves before passing them on
                         if (packet instanceof PacketPAT) {
                             this.handlePAT(packet);
+                        } else if (packet instanceof PacketPMT) {
+                            this.handlePMT(packet);
                         }
 
                         // Mark the PID stream as started (prevents incomplete packages)
@@ -74,6 +76,8 @@ export default class ControllerTS extends Controller {
                         this._pidStreams[packetTS.pid].push(packet);
                         this._pidBuffers[packetTS.pid] = new Uint8Array();
                     }
+
+                    // TODO: check packet continuity counter
 
                     // Append the packet payload to the PID buffer
                     if (packetTS.payload) {
@@ -148,9 +152,31 @@ export default class ControllerTS extends Controller {
     }
 
     handlePAT(packet) {
+        // Check if the PAT is currently active and not a preview of the next PAT
+        if (packet.parent.hasSyntaxSection && !packet.parent.isCurrent) {
+            return;
+        }
+
         // Register programs in the Program Map Table
+        const updates = [];
         for (const program of packet.programs) {
+            if (this._programMapTables[program.pid] !== program.number) {
+                updates.push(program.pid);
+            }
+
             this._programMapTables[program.pid] = program.number;
+        }
+
+        // Emit event if anything was changed
+        if (updates.length > 0) {
+            this.emit('pat', this._programMapTables, updates);
+        }
+    }
+
+    handlePMT(packet) {
+        // Check if the PMT is currently active instead and not a preview of the next PMT
+        if (packet.parent.hasSyntaxSection && !packet.parent.isCurrent) {
+            return;
         }
     }
 }

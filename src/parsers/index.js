@@ -7,6 +7,7 @@ import ParserNIT from './ParserNIT';
 import ParserTDT from './ParserTDT';
 import ParserTOT from './ParserTOT';
 import ParserPMT from './ParserPMT';
+import ParserPES from './ParserPES';
 
 // Export a map of Service Information Table parsers
 export const tableParsers = {
@@ -27,5 +28,6 @@ export {
     ParserNIT,
     ParserTDT,
     ParserTOT,
-    ParserPMT
+    ParserPMT,
+    ParserPES
 };

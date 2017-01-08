@@ -33,17 +33,17 @@ export default class ParserPSI extends Parser {
 
         // Parse table header
         packet.tableId = data[0];
-        packet.syntaxSectionIndicator = (data[1] & 0x80) !== 0;
+        packet.hasSyntaxSection = (data[1] & 0x80) !== 0;
         packet.privateBit = (data[1] & 0x40) !== 0;
         packet.sectionLength = (data[1] & 0x03) << 8 | data[2];
 
         packet.tableData = data.slice(3, 3 + packet.sectionLength);
 
         // Parse syntax section
-        if (packet.syntaxSectionIndicator) {
+        if (packet.hasSyntaxSection) {
             packet.tableIdExtension = packet.tableData[0] << 8 | packet.tableData[1];
             packet.versionNumber = (packet.tableData[2] & 0x3e) >> 1;
-            packet.currentIndicator = (packet.tableData[2] & 0x01) !== 0;
+            packet.isCurrent = (packet.tableData[2] & 0x01) !== 0;
             packet.sectionNumber = packet.tableData[3];
             packet.lastSectionNumber = packet.tableData[4];
 

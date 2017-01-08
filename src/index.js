@@ -1,26 +1,20 @@
 import hyperquest from 'hyperquest';
 
 import config from './config';
-import {ControllerTS} from './controllers';
+import {ControllerTS, ControllerStream} from './controllers';
 
 // Open input stream (HTTP stream)
 const inputStream = hyperquest.get(config.url);
 
-// Intialize controller
+// Intialize controllers
 const controller = new ControllerTS(inputStream, 100000);
+const controllerStream = new ControllerStream(controller);
 
+// Register event handlers
 controller.on('pid', (pid) => {
     console.log('new stream', pid);
-
-    if (pid !== 2000) {
-        return;
-    }
-
-    const stream = controller.getStream(pid);
-    stream.on('readable', () => {
-        console.log('YUP', stream.read(1));
-    });
 });
 
-// Start the controller
+// Start the controllers
 controller.start();
+controllerStream.start();
