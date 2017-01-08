@@ -3,7 +3,7 @@ import {PacketPES} from '../packets';
 import {toHex} from '../util';
 import Parser from './Parser';
 
-export const streamsWithoutHeaders = [
+export const streamsWithoutHeader = [
     0xBC, // program_stream_map
     0xBE, // padding_stream
     0xBF, // private_stream_2
@@ -37,7 +37,7 @@ export default class ParserPES extends Parser {
         let start = 6;
 
         // Parse PES header
-        if (streamsWithoutHeaders.indexOf(packet.streamId) === -1) {
+        if (streamsWithoutHeader.indexOf(packet.streamId) === -1) {
             packet.scramblingControl = (data[6] & 0x30) >> 4;
             packet.isPriority = (data[6] & 0x08) !== 0;
             packet.hasDataAlignment = (data[6] & 0x04) !== 0;
