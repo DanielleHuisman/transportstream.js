@@ -3,28 +3,8 @@ import iconv from 'iconv-lite';
 import {DESCRIPTORS} from '../constants';
 import {ParseError} from '../errors';
 import {PSIDescriptor} from '../packets';
-import {toHexByte} from '../util';
+import {stringifyDvb, toHexByte} from '../util';
 import Parser from './Parser';
-
-const buf = Buffer.from('test');
-const enc = iconv.encode('test', 'ISO-8859-1');
-console.log(buf[Symbol.toStringTag], buf.prototype);
-console.log(buf, enc, iconv.decode(enc, 'ISO-8859-1'));
-
-const stringify = (data) => {
-    // TODO: use the proper encoding from iconv
-    if (data[0] == 0xE0 && data[1] >= 0x80 && data[1] <= 0x9F) {
-        // TODO: two byte control codes
-    } else if (data[0] >= 0x80 && data[0] <= 0x9F) {
-        // TODO: one byte control codes
-    }
-
-    let result = '';
-    data.forEach((value) => {
-        result += String.fromCharCode(value);
-    });
-    return result;
-};
 
 const split = (data, start, size, func) => {
     const list = [];
@@ -90,7 +70,7 @@ const descriptors = {
         type: data[1],
         tag: data[2],
         languageCode: iconv.decode(data.slice(3, 6), 'ISO-8859-1'),
-        text: stringify(data.slice(6, data.length))
+        text: stringifyDvb(data.slice(6, data.length))
     }),
     content_descriptor: (desc, d) => split(d, 0, 2, (data, i) => ({
         levelCombined: data[0],
@@ -159,7 +139,7 @@ const descriptors = {
     }),
     network_name_descriptor: (desc, data) => ({
         raw: data,
-        name: stringify(data)
+        name: stringifyDvb(data)
     }),
     NVOD_reference_descriptor: (desc, d) => split(d, 0, 6, (data, i) => ({
         transportStreamId: data[i] << 8 | data[i + 1],
@@ -170,6 +150,9 @@ const descriptors = {
         countryCode: iconv.decode(data.slice(i, i + 3), 'ISO-8859-1'),
         rating: data[i + 3]
     })),
+    private_data_specifier_descriptor: (desc, data) => ({
+        specifier: data[0] << 24 | data[1] << 16 | data[2] << 8 | data[3]
+    }),
     registration_descriptor: (desc, d) => ({
         formatIdentifier: d[0] << 24 | d[1] << 16 | d[2] << 8 | d[3],
         additionalIdentification: d.slice(3)
@@ -210,10 +193,6 @@ export default class ParserDescriptor extends Parser {
     }
 
     parse(descriptor, ...args) {
-        // if (args.length <= 0 || args[0] !== 'PMT') {
-        //     return;
-        // }
-
         // Validate descriptor
         if (!descriptor instanceof PSIDescriptor) {
             throw new ParseError(`Data should be an instance of PSIDescriptor`);
@@ -223,7 +202,7 @@ export default class ParserDescriptor extends Parser {
         const parser = descriptors[DESCRIPTORS[descriptor.tag]];
         if (parser) {
             descriptor.parsedData = parser(descriptor, descriptor.data);
-            console.log('parsed:', toHexByte(descriptor.tag), DESCRIPTORS[descriptor.tag], descriptor.parsedData, ...args);
+            // console.log('parsed:', toHexByte(descriptor.tag), DESCRIPTORS[descriptor.tag], descriptor.parsedData, ...args);
         } else {
             if (DESCRIPTORS[descriptor.tag]) {
                 console.warn(`No descriptor parser for: ${DESCRIPTORS[descriptor.tag]}`);

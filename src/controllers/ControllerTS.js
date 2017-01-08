@@ -14,6 +14,7 @@ export default class ControllerTS extends Controller {
     parserPSI = new ParserPSI();
     packetCounter = 0;
     _packetStream = through.obj();
+    _pidStarted = {};
     _pidBuffers = {};
     _pidStreams = {};
     _programMapTables = {};
@@ -57,7 +58,7 @@ export default class ControllerTS extends Controller {
                     }
 
                     // If a new payload starts parse the PID buffer and push the result to the PID stream
-                    if (packetTS.payloadUnitStartIndicator && this._pidBuffers[packetTS.pid].length > 0) {
+                    if (packetTS.payloadUnitStartIndicator && this._pidStarted[packetTS.pid] && this._pidBuffers[packetTS.pid].length > 0) {
                         // Parse the packet
                         const packet = this.parsePacket(packetTS.pid, this._pidBuffers[packetTS.pid]);
 
@@ -65,6 +66,9 @@ export default class ControllerTS extends Controller {
                         if (packet instanceof PacketPAT) {
                             this.handlePAT(packet);
                         }
+
+                        // Mark the PID stream as started (prevents incomplete packages)
+                        this._pidStarted[packetTS.pid] = true;
 
                         // Push the packet to the PID stream
                         this._pidStreams[packetTS.pid].push(packet);
