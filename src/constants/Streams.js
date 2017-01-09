@@ -31,3 +31,10 @@ export const STREAM_TYPES = {
     0x7F: 'IPMP stream'
     // 0x80 - 0xFF: User defined
 };
+
+export const STREAM_GROUPS = {
+    video: [0x01, 0x02, 0x1B],
+    audio: [0x03, 0x04, 0x0F, 0x11],
+    subtitles: [],
+    teletext: []
+};

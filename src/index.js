@@ -14,6 +14,15 @@ const controllerStream = new ControllerStream(controller);
 controller.on('pid', (pid) => {
     console.log('new stream', pid);
 });
+controller.on('pat', (pat, updates) => {
+    console.log('new PAT', updates, pat);
+});
+controllerStream.on('program-added', (program) => {
+    console.log('new program', program);
+});
+controllerStream.on('program-updated', (program) => {
+    console.log('updated program', program);
+});
 
 // Start the controllers
 controller.start();

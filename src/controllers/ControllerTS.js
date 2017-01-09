@@ -1,7 +1,7 @@
 import through from 'through2';
 
 import {PACKET_LENGTH, PACKET_IDENTIFIERS, NULL_PACKET, TABLE_IDENTIFIERS} from '../constants';
-import {PacketPAT, PacketPMT} from '../packets';
+import {PacketPAT} from '../packets';
 import {ParserTS, ParserPSI, tableParsers} from '../parsers';
 import {mergeUint8Arrays} from '../util';
 import Controller from './Controller';
@@ -18,6 +18,7 @@ export default class ControllerTS extends Controller {
     _pidBuffers = {};
     _pidStreams = {};
     _programMapTables = {};
+    _cache = {};
 
     constructor(stream, maxPackets) {
         super('TS');
@@ -68,8 +69,6 @@ export default class ControllerTS extends Controller {
                             // Handle certain packets ourselves before passing them on
                             if (packet instanceof PacketPAT) {
                                 this.handlePAT(packet);
-                            } else if (packet instanceof PacketPMT) {
-                                this.handlePMT(packet);
                             }
 
                             // Push the packet to the PID stream
@@ -150,6 +149,11 @@ export default class ControllerTS extends Controller {
                 // Parse packet
                 const packet = tableParsers[table].parse(packetPSI.tableData);
                 packet.parent = packetPSI;
+
+                // Free duplicate and unused memory
+                delete packet.parent.data;
+                delete packet.parent.tableData;
+
                 return packet;
             }
         }
@@ -160,32 +164,38 @@ export default class ControllerTS extends Controller {
 
     handlePAT(packet) {
         // Check if the PAT is currently active and not a preview of the next PAT
-        if (packet.parent.hasSyntaxSection && !packet.parent.isCurrent) {
+        if (!packet.parent.isCurrent) {
             return;
         }
 
-        // TODO: check if any PMT have disappeared
+        // Check if the PMT wasn't already processed
+        if (this._cache[packet.pcrPID] === packet.parent.versionNumber) {
+            return;
+        }
 
-        // Register programs in the Program Map Table
+        // Update the PMT cache
+        this._cache[packet.pcrPID] = packet.parent.versionNumber;
+
+        // TODO: handle add/update/remove of PIDs better
+
+        // Register programs in the new Program Map Table
+        const tables = {};
         const updates = [];
         for (const program of packet.programs) {
+            // Check if anything has changed
             if (this._programMapTables[program.pid] !== program.number) {
                 updates.push(program.pid);
             }
 
-            this._programMapTables[program.pid] = program.number;
+            tables[program.pid] = program.number;
         }
+
+        // Override the old tables
+        this._programMapTables = tables;
 
         // Emit event if anything was changed
         if (updates.length > 0) {
             this.emit('pat', this._programMapTables, updates);
-        }
-    }
-
-    handlePMT(packet) {
-        // Check if the PMT is currently active instead and not a preview of the next PMT
-        if (packet.parent.hasSyntaxSection && !packet.parent.isCurrent) {
-            return;
         }
     }
 }

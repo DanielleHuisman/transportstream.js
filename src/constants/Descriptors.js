@@ -97,3 +97,10 @@ export const DESCRIPTORS = {
     // 0x80 - 0xFE: User defined
     // 0xFF: Forbidden
 };
+
+export const DESCRIPTOR_GROUPS = {
+    video: [0x02, 0x1B, 0x28],
+    audio: [0x03, 0x1C, 0x6A, 0x7A],
+    subtitles: [0x59],
+    teletext: [0x46, 0x56]
+};
