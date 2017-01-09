@@ -8,7 +8,7 @@ export default class ControllerStream extends Controller {
     _cache = {};
 
     constructor(controllerTS) {
-        super('stream');
+        super('PMT');
         this.controllerTS = controllerTS;
     }
 
