@@ -134,8 +134,77 @@ const descriptors = {
         languageCode: iconv.decode(Buffer.from(data.slice(i, i + 3)), 'ISO-8859-1'),
         audioType: data[i + 3]
     })),
+    linkage_descriptor: (desc, data) => {
+        const result = {
+            streamId: data[0] << 8 | data[1],
+            originalNetworkId: data[2] << 8 | data[3],
+            serviceId: data[4] << 8 | data[5],
+            linkageType: data[6]
+        };
+        let start = 7;
+
+        if (result.linkageType === 0x80) {
+            result.handOverType = (data[start] & 0xf0) >> 4;
+            result.originType = data[start] & 0x01;
+            start++;
+
+            if (result.handOverType >= 0x01 && result.handOverType <= 0x03) {
+                result.networkId = data[start] << 8 | data[start + 1];
+                start += 2;
+            }
+
+            if (result.originType === 0x00) {
+                result.initialServiceId = data[start] << 8 | data[start + 1];
+                start += 2;
+            }
+        } else if (result.linkageType === 0x0D) {
+            result.targetEventId = data[start] << 8 | data[start + 1];
+            result.isTargetListed = (data[start + 2] & 0x80) !== 0;
+            result.isEventSimulcast = (data[start + 2] & 0x40) !== 0;
+            start += 3;
+        } else if (result.linkageType >= 0x0E && result.linkageType <= 0x1F) {
+            result.loopLength = data[start];
+            start++;
+            let index = 0;
+
+            while (index < result.loopLength) {
+                result.targetEventId = data[start + index] << 8 | data[start + index + 1];
+                result.isTargetListed = (data[start + index+ 2] & 0x80) !== 0;
+                result.isEventSimulcast = (data[start + index + 2] & 0x40) !== 0;
+                result.linkType = (data[start + index + 2] & 0x30) >> 4;
+                result.targetIdType = (data[start + index + 2] & 0x0c) >> 2;
+                result.hasOriginalNetworkId = (data[start + index+ 2] & 0x02) !== 0;
+                result.hasServiceId = (data[start + index+ 2] & 0x02) !== 0;
+                index += 3;
+
+                if (result.targetIdType === 3) {
+                    result.userDefinedId = data[start + index] << 8 | data[start + index + 1];
+                    index += 2;
+                } else {
+                    if (result.targetIdType === 1) {
+                        result.targetStreamId = data[start + index] << 8 | data[start + index + 1];
+                        index += 2;
+                    }
+                    if (result.hasOriginalNetworkId) {
+                        result.targetOriginalNetworkId = data[start + index] << 8 | data[start + index + 1];
+                        index += 2;
+                    }
+                    if (result.hasServiceId) {
+                        result.targetServiceId = data[start + index] << 8 | data[start + index + 1];
+                        index += 2;
+                    }
+                }
+            }
+
+            start += result.loopLength;
+        }
+
+        result.privateData = data.slice(start);
+
+        return result;
+    },
     maximum_bitrate_descriptor: (desc, data) => ({
-        maximumBitrate: (data[0] & 0xc0) << 16 | data[1] << 8 | data[2]
+        maximumBitrate: (data[0] & 0x30) << 16 | data[1] << 8 | data[2]
     }),
     network_name_descriptor: (desc, data) => ({
         raw: data,
@@ -162,8 +231,8 @@ const descriptors = {
         type: data[i + 2]
     })),
     smoothing_buffer_descriptor: (desc, data) => ({
-        sbLeakRate: (data[0] & 0xc0) << 16 | data[1] << 8 | data[2],
-        sbSize: (data[3] & 0xc0) << 16 | data[4] << 8 | data[5],
+        sbLeakRate: (data[0] & 0x30) << 16 | data[1] << 8 | data[2],
+        sbSize: (data[3] & 0x30) << 16 | data[4] << 8 | data[5],
     }),
     stream_identifier_descriptor: (desc, data) => ({
         componentTag: data[0]
@@ -201,6 +270,7 @@ export default class ParserDescriptor extends Parser {
         // Parse descriptor
         const parser = descriptors[DESCRIPTORS[descriptor.tag]];
         if (parser) {
+            descriptor.name = DESCRIPTORS[descriptor.tag];
             descriptor.parsedData = parser(descriptor, descriptor.data);
             // console.log('parsed:', toHexByte(descriptor.tag), DESCRIPTORS[descriptor.tag], descriptor.parsedData, ...args);
         } else {
@@ -210,7 +280,7 @@ export default class ParserDescriptor extends Parser {
                 if (!descriptor.tag) {
                     console.warn(`Descriptor has no tag`, descriptor);
                 } else {
-                    console.warn(`No descriptor entry for: ${toHexByte(descriptor.tag)}`);
+                    // console.warn(`No descriptor entry for: ${toHexByte(descriptor.tag)}`);
                 }
             }
         }

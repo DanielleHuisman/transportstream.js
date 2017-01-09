@@ -29,11 +29,12 @@ export default class ControllerTS extends Controller {
         this.stream.on('readable', () => {
             let data = null;
 
-            // Read packets until the stream ends
+            // Read all available packets
             while ((data = this.stream.read(PACKET_LENGTH)) !== null) {
                 try {
                     // Discard incomplete packets
                     if (data.length < PACKET_LENGTH) {
+                        console.log('incomplete, length:', data.length);
                         return;
                     }
 
@@ -58,22 +59,27 @@ export default class ControllerTS extends Controller {
                     }
 
                     // If a new payload starts parse the PID buffer and push the result to the PID stream
-                    if (packetTS.payloadUnitStartIndicator && this._pidStarted[packetTS.pid] && this._pidBuffers[packetTS.pid].length > 0) {
-                        // Parse the packet
-                        const packet = this.parsePacket(packetTS.pid, this._pidBuffers[packetTS.pid]);
+                    if (packetTS.payloadUnitStartIndicator && this._pidBuffers[packetTS.pid].length > 0) {
+                        // Check if the PID stream has started (prevents incomplete packages)
+                        if (this._pidStarted[packetTS.pid]) {
+                            // Parse the packet
+                            const packet = this.parsePacket(packetTS.pid, this._pidBuffers[packetTS.pid]);
 
-                        // Handle certain packets ourselves before passing them on
-                        if (packet instanceof PacketPAT) {
-                            this.handlePAT(packet);
-                        } else if (packet instanceof PacketPMT) {
-                            this.handlePMT(packet);
+                            // Handle certain packets ourselves before passing them on
+                            if (packet instanceof PacketPAT) {
+                                this.handlePAT(packet);
+                            } else if (packet instanceof PacketPMT) {
+                                this.handlePMT(packet);
+                            }
+
+                            // Push the packet to the PID stream
+                            this._pidStreams[packetTS.pid].push(packet);
                         }
 
                         // Mark the PID stream as started (prevents incomplete packages)
                         this._pidStarted[packetTS.pid] = true;
 
-                        // Push the packet to the PID stream
-                        this._pidStreams[packetTS.pid].push(packet);
+                        // Clear the PID buffer
                         this._pidBuffers[packetTS.pid] = new Uint8Array();
                     }
 
@@ -86,6 +92,7 @@ export default class ControllerTS extends Controller {
 
                     // End stream after a few packets
                     if (this.maxPackets >= 0 && this.packetCounter > this.maxPackets) {
+                        console.log('ending stream after', this.packetCounter, 'packets');
                         this.stream.destroy();
                     } else {
                         this.packetCounter++;
@@ -156,6 +163,8 @@ export default class ControllerTS extends Controller {
         if (packet.parent.hasSyntaxSection && !packet.parent.isCurrent) {
             return;
         }
+
+        // TODO: check if any PMT have disappeared
 
         // Register programs in the Program Map Table
         const updates = [];

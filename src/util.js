@@ -1,5 +1,3 @@
-import iconv from 'iconv-lite';
-
 export const mergeUint8Arrays = (array1, array2) => {
     const buffer = new Uint8Array(array1.length + array2.length);
     buffer.set(array1, 0);
