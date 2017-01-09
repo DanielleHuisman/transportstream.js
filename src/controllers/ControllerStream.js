@@ -28,6 +28,7 @@ export default class ControllerStream extends Controller {
         for (const pid of updates) {
             const stream = this.controllerTS.getStream(pid);
             stream.on('readable', this.readStream.bind(this, pid, stream));
+            this.controllerTS.enableStream(pid);
         }
     }
 

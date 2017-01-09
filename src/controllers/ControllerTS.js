@@ -13,6 +13,8 @@ export default class ControllerTS extends Controller {
     parser = new ParserTS();
     parserPSI = new ParserPSI();
     packetCounter = 0;
+    _isPacketStreamEnabled = false;
+    _isStreamEnabled = {};
     _packetStream = through.obj();
     _pidStarted = {};
     _pidBuffers = {};
@@ -43,7 +45,9 @@ export default class ControllerTS extends Controller {
                     const packetTS = this.parser.parse(data);
 
                     // Push the parsed packet to the packet stream
-                    this._packetStream.push(packetTS);
+                    if (this.isPacketStreamEnabled()) {
+                        this._packetStream.push(packetTS);
+                    }
 
                     // Stop parsing payload if it's a null packet
                     if (packetTS.pid === NULL_PACKET) {
@@ -72,7 +76,9 @@ export default class ControllerTS extends Controller {
                             }
 
                             // Push the packet to the PID stream
-                            this._pidStreams[packetTS.pid].push(packet);
+                            if (this.isStreamEnabled(packetTS.pid)) {
+                                this._pidStreams[packetTS.pid].push(packet);
+                            }
                         }
 
                         // Mark the PID stream as started (prevents incomplete packages)
@@ -90,7 +96,7 @@ export default class ControllerTS extends Controller {
                     }
 
                     // End stream after a few packets
-                    if (this.maxPackets >= 0 && this.packetCounter > this.maxPackets) {
+                    if (this.maxPackets >= 0 && this.packetCounter >= this.maxPackets) {
                         console.log('ending stream after', this.packetCounter, 'packets');
                         this.stream.destroy();
                     } else {
@@ -105,6 +111,38 @@ export default class ControllerTS extends Controller {
         }).on('error', (err) => {
             console.error(err);
         });
+    }
+
+    isPacketStreamEnabled() {
+        return this._isPacketStreamEnabled;
+    }
+
+    toggleStream() {
+        this._isPacketStreamEnabled = !this._isPacketStreamEnabled;
+    }
+
+    enablePacketStream() {
+        this._isPacketStreamEnabled = true;
+    }
+
+    disablePacketStream() {
+        this._isPacketStreamEnabled = true;
+    }
+
+    isStreamEnabled(pid) {
+        return this._isStreamEnabled[pid] || false;
+    }
+
+    toggleStream(pid) {
+        this._isStreamEnabled[pid] = !this._isStreamEnabled[pid];
+    }
+
+    enableStream(pid) {
+        this._isStreamEnabled[pid] = true;
+    }
+
+    disableStream(pid) {
+        this._isStreamEnabled[pid] = true;
     }
 
     getPacketCount() {
