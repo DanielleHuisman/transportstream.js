@@ -2,7 +2,7 @@ import through from 'through2';
 
 import {PACKET_LENGTH, PACKET_IDENTIFIERS, NULL_PACKET, TABLE_IDENTIFIERS} from '../constants';
 import {PacketPAT} from '../packets';
-import {ParserTS, ParserPSI, tableParsers} from '../parsers';
+import {ParserTS, ParserPSI, ParserPES, tableParsers} from '../parsers';
 import {mergeUint8Arrays} from '../util';
 import Controller from './Controller';
 
@@ -12,9 +12,12 @@ export default class ControllerTS extends Controller {
 
     parser = new ParserTS();
     parserPSI = new ParserPSI();
+    parserPES = new ParserPES();
     packetCounter = 0;
     _isPacketStreamEnabled = false;
-    _isStreamEnabled = {};
+    _isStreamEnabled = {
+        0: true // Program Association Table
+    };
     _packetStream = through.obj();
     _pidStarted = {};
     _pidBuffers = {};
@@ -65,8 +68,8 @@ export default class ControllerTS extends Controller {
 
                     // If a new payload starts parse the PID buffer and push the result to the PID stream
                     if (packetTS.payloadUnitStartIndicator && this._pidBuffers[packetTS.pid].length > 0) {
-                        // Check if the PID stream has started (prevents incomplete packages)
-                        if (this._pidStarted[packetTS.pid]) {
+                        // Check if the PID stream has started (prevents incomplete packages) and if it's enabled (prevents unnecesarry parsing)
+                        if (this._pidStarted[packetTS.pid] && this.isStreamEnabled(packetTS.pid)) {
                             // Parse the packet
                             const packet = this.parsePacket(packetTS.pid, this._pidBuffers[packetTS.pid]);
 
@@ -76,9 +79,7 @@ export default class ControllerTS extends Controller {
                             }
 
                             // Push the packet to the PID stream
-                            if (this.isStreamEnabled(packetTS.pid)) {
-                                this._pidStreams[packetTS.pid].push(packet);
-                            }
+                            this._pidStreams[packetTS.pid].push(packet);
                         }
 
                         // Mark the PID stream as started (prevents incomplete packages)
@@ -172,11 +173,11 @@ export default class ControllerTS extends Controller {
         }
 
         // Unsupported packet, return raw data
-        return data;
+        return this.parsePES(pid, data);
     }
 
     parseTable(pid, data) {
-        // Parse PSI table headers
+        // Parse PSI table header
         const packetPSI = this.parserPSI.parse(data);
 
         // Find table specific parser
@@ -198,6 +199,11 @@ export default class ControllerTS extends Controller {
 
         // Unsupported packet, return raw data
         return data;
+    }
+
+    parsePES(pid, data) {
+        // Parse PES header
+        return this.parserPES.parse(data);
     }
 
     handlePAT(packet) {

@@ -62,6 +62,7 @@ export default class ControllerStream extends Controller {
         // Create or clear the program for the new version of the PMT
         const program = {
             id: packet.pcrPID,
+            pmtId: pid,
             descriptors: packet.programDescriptors,
             video: {},
             audio: {},

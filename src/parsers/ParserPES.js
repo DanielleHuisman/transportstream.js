@@ -24,17 +24,17 @@ export default class ParserPES extends Parser {
         const packet = new PacketPES(data);
 
         // Validate PES prefix
-        const pesPrefix = data[0] << 16 | data[1] << 8 | data[2];
-        if (pesPrefix !== 0x000001) {
+        const pesPrefix = data[0] << 8 | data[1];
+        if (pesPrefix !== 0x0001) {
             throw new ParseError(this, `Invalid PES prefix (${toHex(pesPrefix, 6)}), should be 0x000001`);
         }
 
         // Parse PES header
-        packet.streamId = data[3];
-        packet.pesLength = data[4] << 8 | data[5];
+        packet.streamId = data[2];
+        packet.pesLength = data[3] << 8 | data[4];
 
         // Define packet payload start
-        let start = 6;
+        let start = 5;
 
         // Parse PES header
         if (streamsWithoutHeader.indexOf(packet.streamId) === -1) {
@@ -161,5 +161,7 @@ export default class ParserPES extends Parser {
 
         // Parse payload
         packet.payload = data.slice(start);
+
+        return packet;
     }
 };
