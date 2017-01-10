@@ -21,9 +21,18 @@ controllerTS.on('pat', (pat, updates) => {
 });
 controllerPMT.on('program-added', (program) => {
     console.log('new program', program);
+
+    // Switch to the new program
+    controllerStream.setProgram(program.id);
 });
 controllerPMT.on('program-updated', (program) => {
     console.log('updated program', program);
+});
+controllerStream.on('program-updated', (program) => {
+    console.log('switched to program', program);
+});
+controllerStream.on('streams-updated', (streams, updates) => {
+    console.log('switched streams', updates, streams);
 });
 
 // Start the controllers

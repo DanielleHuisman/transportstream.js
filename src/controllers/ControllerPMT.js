@@ -28,6 +28,10 @@ export default class ControllerPMT extends Controller {
         return this._programs[pid];
     }
 
+    hasProgram(pid) {
+        return this._programs[pid] !== undefined && this._programs[pid] !== null;
+    }
+
     handlePATUpdate = (programMapTables, updates) => {
         for (const pid of updates) {
             const stream = this.controllerTS.getStream(pid);
