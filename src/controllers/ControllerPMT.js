@@ -1,7 +1,7 @@
 import {STREAM_GROUPS, DESCRIPTOR_GROUPS} from '../constants';
 import Controller from './Controller';
 
-export default class ControllerStream extends Controller {
+export default class ControllerPMT extends Controller {
     controllerTS = null;
 
     _programs = {};
@@ -10,11 +10,15 @@ export default class ControllerStream extends Controller {
     constructor(controllerTS) {
         super('PMT');
         this.controllerTS = controllerTS;
+
+        this.init();
     }
 
-    start() {
+    init() {
         this.controllerTS.on('pat', this.handlePATUpdate);
     }
+
+    start() {}
 
     getPrograms() {
         return this._programs;

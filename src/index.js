@@ -1,20 +1,22 @@
 import hyperquest from 'hyperquest';
 
 import config from './config';
-import {ControllerTS, ControllerPMT} from './controllers';
+import {ControllerTS, ControllerPMT, ControllerStream, ControllerAV} from './controllers';
 
 // Open input stream (HTTP stream)
 const inputStream = hyperquest.get(config.url);
 
 // Intialize controllers
-const controller = new ControllerTS(inputStream, 100000);
-const controllerPMT = new ControllerPMT(controller);
+const controllerTS = new ControllerTS(inputStream, 100000);
+const controllerPMT = new ControllerPMT(controllerTS);
+const controllerStream = new ControllerStream(controllerTS, controllerPMT);
+const controllerAV = new ControllerAV(controllerTS, controllerPMT);
 
 // Register event handlers
-controller.on('pid', (pid) => {
+controllerTS.on('pid', (pid) => {
     console.log('new stream', pid);
 });
-controller.on('pat', (pat, updates) => {
+controllerTS.on('pat', (pat, updates) => {
     console.log('new PAT', updates, pat);
 });
 controllerPMT.on('program-added', (program) => {
@@ -25,5 +27,7 @@ controllerPMT.on('program-updated', (program) => {
 });
 
 // Start the controllers
-controller.start();
+controllerTS.start();
 controllerPMT.start();
+controllerStream.start();
+controllerAV.start();
