@@ -3,7 +3,7 @@ import iconv from 'iconv-lite';
 import {DESCRIPTORS} from '../constants';
 import {ParseError} from '../errors';
 import {PSIDescriptor} from '../packets';
-import {stringifyDvb, toHexByte} from '../util';
+import {stringifyDvb} from '../util';
 import Parser from './Parser';
 
 const split = (data, start, size, func) => {
