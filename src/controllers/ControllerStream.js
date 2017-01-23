@@ -131,6 +131,9 @@ export default class ControllerStream extends Controller {
                                         // However language information is not available at this time
                                         score = 1;
                                     }
+
+                                    // TODO: remove this test
+                                    score = subtitle.type;
                                 }
                             }
                         }

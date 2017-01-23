@@ -1,16 +1,17 @@
 import hyperquest from 'hyperquest';
 
 import config from './config';
-import {ControllerTS, ControllerPMT, ControllerStream, ControllerAV} from './controllers';
+import {ControllerTS, ControllerPMT, ControllerStream, ControllerAV, ControllerSubtitles} from './controllers';
 
 // Open input stream (HTTP stream)
 const inputStream = hyperquest.get(config.url);
 
 // Intialize controllers
-const controllerTS = new ControllerTS(inputStream, 100000);
+const controllerTS = new ControllerTS(inputStream, 1000000);
 const controllerPMT = new ControllerPMT(controllerTS);
 const controllerStream = new ControllerStream(controllerTS, controllerPMT);
-const controllerAV = new ControllerAV(controllerTS, controllerPMT);
+const controllerAV = new ControllerAV(controllerTS);
+const controllerSubtitles = new ControllerSubtitles(controllerTS);
 
 // Register event handlers
 controllerTS.on('pid', (pid) => {
@@ -33,6 +34,10 @@ controllerStream.on('program-updated', (program) => {
 });
 controllerStream.on('streams-updated', (streams, updates) => {
     console.log('switched streams', updates, streams);
+
+    if (updates.indexOf('subtitles') !== -1) {
+        controllerSubtitles.setStream(streams.subtitles);
+    }
 });
 
 // Start the controllers
@@ -40,3 +45,4 @@ controllerTS.start();
 controllerPMT.start();
 controllerStream.start();
 controllerAV.start();
+controllerSubtitles.start();

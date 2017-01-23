@@ -162,6 +162,10 @@ export default class ControllerTS extends Controller {
         return this._pidStreams[pid];
     }
 
+    hasStream(pid) {
+        return this._pidStreams[pid] !== undefined && this._pidStreams[pid] !== null;
+    }
+
     getProgramMapTables() {
         return this._programMapTables;
     }

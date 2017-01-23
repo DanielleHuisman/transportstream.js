@@ -6,12 +6,10 @@ import Controller from './Controller';
 
 export default class ControllerAV extends Controller {
     controllerTS = null;
-    controllerPMT = null;
 
-    constructor(controllerTS, controllerPMT) {
+    constructor(controllerTS) {
         super('AV');
         this.controllerTS = controllerTS;
-        this.controllerPMT = controllerPMT;
 
         this.init();
     }
