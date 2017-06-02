@@ -38,31 +38,31 @@ export default class ParserPES extends Parser {
 
         // Parse PES header
         if (streamsWithoutHeader.indexOf(packet.streamId) === -1) {
-            packet.scramblingControl = (data[6] & 0x30) >> 4;
-            packet.isPriority = (data[6] & 0x08) !== 0;
-            packet.hasDataAlignment = (data[6] & 0x04) !== 0;
-            packet.hasCopyright = (data[6] & 0x02) !== 0;
-            packet.isOriginal = (data[6] & 0x01) !== 0;
-            packet.hasPTS = (data[7] & 0x80) !== 0;
-            packet.hasDTS = (data[7] & 0x40) !== 0;
-            packet.hasESCR = (data[7] & 0x20) !== 0;
-            packet.hasESRate = (data[7] & 0x10) !== 0;
-            packet.hasDSMTrickMode = (data[7] & 0x08) !== 0;
-            packet.hasAddinitionalCopyInfo = (data[7] & 0x04) !== 0;
-            packet.hasCRC = (data[7] & 0x02) !== 0;
-            packet.hasExtension = (data[7] & 0x01) !== 0;
-            packet.headerLength = data[8];
-            start += 9;
+            packet.scramblingControl = (data[5] & 0x30) >> 4;
+            packet.isPriority = (data[5] & 0x08) !== 0;
+            packet.hasDataAlignment = (data[5] & 0x04) !== 0;
+            packet.hasCopyright = (data[5] & 0x02) !== 0;
+            packet.isOriginal = (data[5] & 0x01) !== 0;
+            packet.hasPTS = (data[6] & 0x80) !== 0;
+            packet.hasDTS = (data[6] & 0x40) !== 0;
+            packet.hasESCR = (data[6] & 0x20) !== 0;
+            packet.hasESRate = (data[6] & 0x10) !== 0;
+            packet.hasDSMTrickMode = (data[6] & 0x08) !== 0;
+            packet.hasAddinitionalCopyInfo = (data[6] & 0x04) !== 0;
+            packet.hasCRC = (data[6] & 0x02) !== 0;
+            packet.hasExtension = (data[6] & 0x01) !== 0;
+            packet.headerLength = data[7];
+            start += 3;
 
             // Parse presentation timestamp
             if (packet.hasPTS) {
-                packet.pts = (data[start] & 0x07) << 29 | data[start + 1] << 21 | data[start + 2] << 14 | data[start + 3] << 7 | data[start + 4] >> 1;
+                packet.pts = (data[start] & 0x0e) << 29 | data[start + 1] << 21 | data[start + 2] << 14 | data[start + 3] << 7 | data[start + 4] >> 1;
                 start += 5;
             }
 
             // Parse decoding timestamp
             if (packet.hasDTS) {
-                packet.dts = (data[start] & 0x07) << 29 | data[start + 1] << 21 | data[start + 2] << 14 | data[start + 3] << 7 | data[start + 4] >> 1;
+                packet.dts = (data[start] & 0x0e) << 29 | data[start + 1] << 21 | data[start + 2] << 14 | data[start + 3] << 7 | data[start + 4] >> 1;
                 start += 5;
             }
 
@@ -154,13 +154,13 @@ export default class ParserPES extends Parser {
                     start += packet.extension2Length;
                 }
             }
-
-            // Skip any remaining stuffing bytes
-            start = 9 + packet.headerLength;
         }
 
+        // Skip any remaining stuffing bytes
+        start = 8 + packet.headerLength;
+
         // Parse payload
-        packet.payload = data.slice(start);
+        packet.payload = data.slice(start, start + packet.pesLength);
 
         return packet;
     }

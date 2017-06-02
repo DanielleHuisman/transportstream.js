@@ -36,6 +36,12 @@ controllerStream.on('program-updated', (program) => {
 controllerStream.on('streams-updated', (streams, updates) => {
     console.log('switched streams', updates, streams);
 
+    if (updates.indexOf('audio') !== -1) {
+        controllerAV.setAudioStream(streams.audio);
+    }
+    if (updates.indexOf('video') !== -1) {
+        controllerAV.setVideoStream(streams.video);
+    }
     if (updates.indexOf('subtitles') !== -1) {
         controllerSubtitles.setStream(streams.subtitles);
     }
