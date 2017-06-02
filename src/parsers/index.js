@@ -4,6 +4,7 @@ import ParserPSI from './ParserPSI';
 import ParserDescriptor from './ParserDescriptor';
 import ParserPAT from './ParserPAT';
 import ParserNIT from './ParserNIT';
+import ParserSDT from './ParserSDT';
 import ParserTDT from './ParserTDT';
 import ParserTOT from './ParserTOT';
 import ParserPMT from './ParserPMT';
@@ -15,6 +16,7 @@ import ParserSubtitleSegment from './ParserSubtitleSegment';
 export const tableParsers = {
     PAT: new ParserPAT(),
     NIT: new ParserNIT(),
+    SDT: new ParserSDT(),
     TDT: new ParserTDT(),
     TOT: new ParserTOT(),
     PMT: new ParserPMT()
@@ -28,6 +30,7 @@ export {
     ParserDescriptor,
     ParserPAT,
     ParserNIT,
+    ParserSDT,
     ParserTDT,
     ParserTOT,
     ParserPMT,

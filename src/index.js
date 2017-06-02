@@ -1,7 +1,7 @@
 import hyperquest from 'hyperquest';
 
 import config from './config';
-import {ControllerTS, ControllerPMT, ControllerStream, ControllerAV, ControllerSubtitles, ControllerTime} from './controllers';
+import {ControllerTS, ControllerPMT, ControllerStream, ControllerAV, ControllerSubtitles, ControllerInformation} from './controllers';
 
 // Open input stream (HTTP stream)
 const inputStream = hyperquest.get(config.url);
@@ -12,7 +12,7 @@ const controllerPMT = new ControllerPMT(controllerTS);
 const controllerStream = new ControllerStream(controllerTS, controllerPMT);
 const controllerAV = new ControllerAV(controllerTS);
 const controllerSubtitles = new ControllerSubtitles(controllerTS);
-const controllerTime = new ControllerTime(controllerTS);
+const controllerInformation = new ControllerInformation(controllerTS);
 
 // Register event handlers
 controllerTS.on('pid', (pid) => {
@@ -46,13 +46,17 @@ controllerStream.on('streams-updated', (streams, updates) => {
         controllerSubtitles.setStream(streams.subtitles);
     }
 });
-controllerTime.on('tdt', (packet) => {
+
+controllerInformation.enable('time', 'service');
+controllerInformation.on('time-date', (packet) => {
     console.log('TDT', packet.utc);
 });
-controllerTime.on('tot', (packet) => {
+controllerInformation.on('time-offset', (packet) => {
     console.log('TOT', packet.utc, 'offset:', packet.descriptors[0] ? packet.descriptors[0].parsedData[0].offset : undefined);
 });
-
+controllerInformation.on('service', (service) => {
+    console.log('SDT', service);
+});
 
 // // Create media source
 // const buffers = [];
@@ -102,4 +106,4 @@ controllerPMT.start();
 controllerStream.start();
 controllerAV.start();
 controllerSubtitles.start();
-controllerTime.start();
+controllerInformation.start();

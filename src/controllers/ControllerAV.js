@@ -82,6 +82,16 @@ export default class ControllerAV extends Controller {
 
             console.log('audio', packetPES);
 
+            const data = packetPES.data;
+            let offset;
+            for (offset = 0; offset < data.length - 1; offset++) {
+                if ((data[offset] === 0xff) && ((data[offset + 1] & 0xf0) === 0xf0)) {
+                    break;
+                }
+            }
+
+            console.log('start', offset);
+
             // this.emit('audio', packetPES.payload.buffer);
         }
     }
