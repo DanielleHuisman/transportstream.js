@@ -80,9 +80,9 @@ export default class ControllerAV extends Controller {
             // const packet = this.parserSubtitles.parse(packetPES.payload);
             // packet.parent = packetPES;
 
-            // console.log('audio', packetPES);
+            console.log('audio', packetPES);
 
-            this.emit('audio', packetPES.payload.buffer);
+            // this.emit('audio', packetPES.payload.buffer);
         }
     }
 

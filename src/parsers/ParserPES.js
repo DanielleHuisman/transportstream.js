@@ -14,6 +14,14 @@ export const streamsWithoutHeader = [
     0xFF // prograem_stream_directory
 ];
 
+// PTS/DTS are 33 bits therefore we can't use bitwise operators in JavaScript as bitwise operators treat their operands as a sequence of 32 bits
+const parseTimestamp = (data, start) =>
+    (data[start] & 0x0e) * (1 << 29) +
+    data[start + 1] * (1 << 22) +
+    (data[start + 2] & 0xfe) * (1 << 14) +
+    data[start + 3] * (1 << 7) +
+    (data[start + 4] >> 1);
+
 export default class ParserPES extends Parser {
     constructor() {
         super('PES');
@@ -56,13 +64,13 @@ export default class ParserPES extends Parser {
 
             // Parse presentation timestamp
             if (packet.hasPTS) {
-                packet.pts = (data[start] & 0x0e) << 29 | data[start + 1] << 21 | data[start + 2] << 14 | data[start + 3] << 7 | data[start + 4] >> 1;
+                packet.pts = parseTimestamp(data, start);
                 start += 5;
             }
 
             // Parse decoding timestamp
             if (packet.hasDTS) {
-                packet.dts = (data[start] & 0x0e) << 29 | data[start + 1] << 21 | data[start + 2] << 14 | data[start + 3] << 7 | data[start + 4] >> 1;
+                packet.dts = parseTimestamp(data, start);
                 start += 5;
             }
 
