@@ -3,7 +3,7 @@ import iconv from 'iconv-lite';
 import {DESCRIPTORS} from '../constants';
 import {ParseError} from '../errors';
 import {PSIDescriptor} from '../packets';
-import {stringifyDvb} from '../util';
+import {stringifyDvb, parseBCD, parseBCDSeconds, parseDatetimeBCD} from '../util';
 import Parser from './Parser';
 
 const split = (data, start, size, func) => {
@@ -203,6 +203,16 @@ const descriptors = {
 
         return result;
     },
+    local_time_offset_descriptor: (desc, d) => split(d, 0, 13, (data, i) => ({
+        countryCode: iconv.decode(data.slice(i, i + 3), 'ISO-8859-1'),
+        countryRegionId: data[i + 3] & 0xfc,
+        offsetPolarity: data[i + 3] & 0x01,
+        offset: parseBCD(data, i + 4),
+        offsetSeconds: parseBCDSeconds(data, i + 4),
+        timeOfChange: parseDatetimeBCD(data, i + 6),
+        nextOffset: parseBCD(data, i + 11),
+        nextOffsetSeconds: parseBCDSeconds(data, i + 11)
+    })),
     maximum_bitrate_descriptor: (desc, data) => ({
         maximumBitrate: (data[0] & 0x30) << 16 | data[1] << 8 | data[2]
     }),

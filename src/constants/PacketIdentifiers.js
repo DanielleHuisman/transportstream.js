@@ -22,3 +22,24 @@ export const PACKET_IDENTIFIERS = {
     // 32-8190: May be assigned as needed to Program Map Tables (PMT), elementary streams and other data tables.
     8191: ['NULL']
 };
+
+export const REVERSE_PACKET_IDENTIFIERS = {
+    PAT: 0,
+    CAT: 1,
+    TSDT: 2,
+    NIT: 16,
+    SDT: 17,
+    BAT: 17,
+    EIT: 18,
+    CIT: 18,
+    RST: 19,
+    TDT: 20,
+    TOT: 20,
+    NetworkSync: 21,
+    RNT: 22,
+    InbandSignaling: 28,
+    Measurement: 29,
+    DIT: 30,
+    SIT: 31,
+    NULL: 8191
+};

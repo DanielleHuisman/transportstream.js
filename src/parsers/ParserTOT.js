@@ -17,8 +17,8 @@ export default class ParserTOT extends Parser {
         packet.descriptorLength = (data[5] & 0x0f) << 8 | data[6];
 
         // Loop over TOT descriptors
-        let index = 4;
-        while (index < packet.programInfoLength) {
+        let index = 7;
+        while (index < packet.descriptorLength) {
             // Parse TOT descriptor
             const descriptor = parseDescriptor(data, index);
             packet.descriptors.push(descriptor);

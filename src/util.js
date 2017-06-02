@@ -32,7 +32,7 @@ export const stringifyDvb = (data) => {
     return result;
 };
 
-export const parseDatetime = (data, index) => {
+export const _parseDate = (data, index) => {
     // Parse date
     const mjd = data[index] << 8 | data[index + 1];
 
@@ -55,10 +55,44 @@ export const parseDatetime = (data, index) => {
     months = Math.floor(months + 2 - 12 * l);
     years = Math.floor(100 * (n - 49) + years + l);
 
+    return {years, months, days};
+};
+
+export const parseDate = (data, index) => {
+    // Parse date
+    const {years, months, days} = _parseDate(data, index);
+
+    return new Date(`${years}-${months}-${days} 00:00:00 UTC`);
+};
+
+export const parseDatetime = (data, index) => {
+    // Parse date
+    const {years, months, days} = _parseDate(data, index);
+
     // Parse time
     const hours = ((data[index + 2] & 0xf0) >> 4) * 10 + (data[index + 2] & 0x0f);
     const minutes = ((data[index + 3] & 0xf0) >> 4) * 10 + (data[index + 3] & 0x0f);
     const seconds = ((data[index + 4] & 0xf0) >> 4) * 10 + (data[index + 4] & 0x0f);
+
+    return new Date(`${years}-${months}-${days} ${hours}:${minutes}:${seconds} UTC`);
+};
+
+export const parseBCD = (data, index) => {
+    return `${data[index] & 0xc}${data[index] & 0x3}:${data[index + 1] & 0xc}${data[index + 1] & 0x3}`;
+};
+
+export const parseBCDSeconds = (data, index) => {
+    return 60 * (((data[index] & 0xc) * 10 + (data[index] & 0x3)) * 60 + (data[index + 1] & 0xc) * 10 + (data[index + 1] & 0x3));
+};
+
+export const parseDatetimeBCD = (data, index) => {
+    // Parse date
+    const {years, months, days} = _parseDate(data, index);
+
+    // Parse time
+    const hours = `${data[index] & 0xc}${data[index] & 0x3}`;
+    const minutes = `${data[index + 1] & 0xc}${data[index + 1] & 0x3}`;
+    const seconds = `${data[index + 2] & 0xc}${data[index + 2] & 0x3}`;
 
     return new Date(`${years}-${months}-${days} ${hours}:${minutes}:${seconds} UTC`);
 };
