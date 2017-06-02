@@ -53,6 +53,49 @@ controllerTime.on('tot', (packet) => {
     console.log('TOT', packet.utc, 'offset:', packet.descriptors[0] ? packet.descriptors[0].parsedData[0].offset : undefined);
 });
 
+
+// Create media source
+const buffers = [];
+let isLoading = false;
+let sourceBuffer = false;
+const mediaSource = new MediaSource();
+mediaSource.addEventListener('error', console.error);
+mediaSource.addEventListener('sourceopen', () => {
+    sourceBuffer = mediaSource.addSourceBuffer('audio/aac');
+    sourceBuffer.addEventListener('updateend', () => {
+        if (buffers.length > 0) {
+            console.log('appending', buffers[0].byteLength);
+            sourceBuffer.appendBuffer(buffers.shift());
+            isLoading = true;
+        } else {
+            isLoading = false;
+        }
+    });
+});
+
+// Create audio tag
+const audio = document.createElement('audio');
+audio.src = URL.createObjectURL(mediaSource);
+document.body.append(audio);
+
+console.log('IS AAC SUPPORTED:', MediaSource.isTypeSupported('audio/aac'));
+
+controllerAV.on('audio', (buffer) => {
+    if (isLoading || !sourceBuffer) {
+        buffers.push(buffer);
+    } else {
+        console.log('appending', buffer.byteLength);
+        sourceBuffer.appendBuffer(buffer);
+        isLoading = true;
+    }
+});
+
+setTimeout(() => {
+    // mediaSource.endOfStream();
+    console.log('PLAYING', mediaSource);
+    // audio.play();
+}, 1000 * 20);
+
 // Start the controllers
 controllerTS.start();
 controllerPMT.start();

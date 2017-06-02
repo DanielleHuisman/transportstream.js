@@ -14,7 +14,8 @@
   "scripts": {
     "lint": "eslint src --color",
     "build": "browserify src/index.js -o dist/transportstream.js -t babelify",
-    "watch": "watchify src/index.js -o dist/transportstream.js -t babelify"
+    "watch": "watchify src/index.js -o dist/transportstream.js -t babelify",
+    "serve": "http-server . -p 3000 -c-1"
   },
   "dependencies": {
     "crc-32": "^1.0.1",
@@ -33,6 +34,7 @@
     "eslint-config-google": "^0.7.1",
     "eslint-plugin-babel": "^4.0.0",
     "eslint-plugin-import": "^2.2.0",
+    "http-server": "^0.10.0",
     "watchify": "^3.7.0"
   }
 }
