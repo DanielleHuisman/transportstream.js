@@ -11,11 +11,11 @@ export const parseSubtitleSegment = (data, index) => {
 
     // Parse segment header
     segment.type = data[index + 1];
-    segment.pageId = data[index + 2];
-    segment.length = data[index + 3] << 8 | data[index + 4];
+    segment.pageId = data[index + 2] << 8 | data[index + 3];
+    segment.length = data[index + 4] << 8 | data[index + 5];
 
     // Parse segment data
-    segment.data = data.slice(index + 5, index + 5 + segment.length);
+    segment.data = data.slice(index + 6, index + 6 + segment.length);
 
     // Parse segment specific data
     parserSegment.parse(segment);
@@ -38,13 +38,15 @@ export default class ParserSubtitles extends Parser {
 
         // Loop over all subtitle segments
         let index = 2;
-        while (data[index] === 0x0f) {
+        while (data[index] === 0x0f && index < data.length) {
             // Parse subtitle segment
             const segment = parseSubtitleSegment(data, index);
             packet.segments.push(segment);
 
-            index += 5 + segment.length;
+            index += 6 + segment.length;
         }
+
+        console.log(index);
 
         return packet;
     }

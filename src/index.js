@@ -43,19 +43,24 @@ controllerStream.on('streams-updated', (streams, updates) => {
         controllerAV.setVideoStream(streams.video);
     }
     if (updates.indexOf('subtitles') !== -1) {
-        controllerSubtitles.setStream(streams.subtitles);
+        // controllerSubtitles.setStream(streams.subtitles);
+        controllerSubtitles.setStream(2103);
     }
 });
 
 controllerInformation.enable('time', 'service');
 controllerInformation.on('time-date', (packet) => {
-    console.log('TDT', packet.utc);
+    console.log('[TDT]', packet.utc);
 });
 controllerInformation.on('time-offset', (packet) => {
-    console.log('TOT', packet.utc, 'offset:', packet.descriptors[0] ? packet.descriptors[0].parsedData[0].offset : undefined);
+    console.log('[TOT]', packet.utc, 'offset:', packet.descriptors[0] ? packet.descriptors[0].parsedData[0].offset : undefined);
 });
 controllerInformation.on('service', (service) => {
-    console.log('SDT', service);
+    const data = service.descriptors[0] && service.descriptors[0].parsedData;
+    if (data) {
+        console.log('[SDT]', data.name, 'provided by', data.provider);
+        document.getElementById('title').textContent = `${data.name} (provided by ${data.provider})`;
+    }
 });
 
 // // Create media source

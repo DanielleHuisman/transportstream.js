@@ -80,7 +80,7 @@ export default class ControllerAV extends Controller {
             // const packet = this.parserSubtitles.parse(packetPES.payload);
             // packet.parent = packetPES;
 
-            console.log('audio', packetPES);
+            // console.log('audio', packetPES);
 
             const data = packetPES.data;
             let offset;
@@ -90,7 +90,7 @@ export default class ControllerAV extends Controller {
                 }
             }
 
-            console.log('start', offset);
+            // console.log('start', offset);
 
             // this.emit('audio', packetPES.payload.buffer);
         }

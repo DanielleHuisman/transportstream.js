@@ -64,7 +64,7 @@ export default class ControllerSubtitles extends Controller {
             const packet = this.parserSubtitles.parse(packetPES.payload);
             packet.parent = packetPES;
 
-            // console.log(packet);
+            console.log(packet);
         }
     }
 };
