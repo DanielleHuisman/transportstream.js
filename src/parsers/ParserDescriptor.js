@@ -236,6 +236,11 @@ const descriptors = {
         formatIdentifier: d[0] << 24 | d[1] << 16 | d[2] << 8 | d[3],
         additionalIdentification: d.slice(3)
     }),
+    service_descriptor: (desc, data) => ({
+        type: data[0],
+        provider: stringifyDvb(data.slice(2, 2 + data[1])),
+        name: stringifyDvb(data.slice(3 + data[1], data.length))
+    }),
     service_list_descriptor: (desc, d) => split(d, 0, 3, (data, i) => ({
         id: data[i] << 8 | data[i + 1],
         type: data[i + 2]

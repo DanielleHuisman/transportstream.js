@@ -3,6 +3,14 @@ import {ParseError} from '../errors';
 import {SubtitleSegment} from '../packets';
 import Parser from './Parser';
 
+const split = (data, start, size, func) => {
+    const list = [];
+    for (let i = start; i < data.length; i += size) {
+        list.push(func(data, i));
+    }
+    return list;
+};
+
 const segments = {
     display_definition_segment: (desc, data) => {
         const finalData = {
@@ -21,7 +29,17 @@ const segments = {
         }
 
         return finalData;
-    }
+    },
+    page_composition_segment: (desc, d) => ({
+        timeOut: d[0],
+        versionNumber: (d[1] & 0xf0) >> 4,
+        state: (d[1] & 0xc0) >> 2,
+        regions: split(d, 3, 6, (data, index) => ({
+            id: data[index],
+            horizontalAddress: data[index + 2] << 8 | data[index + 3],
+            verticalAddress: data[index + 4] << 8 | data[index + 5],
+        }))
+    })
 };
 
 export default class ParserSegment extends Parser {
