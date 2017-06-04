@@ -1,5 +1,36 @@
+import {H264_UNITS} from '../constants';
 // import {PacketH264} from '../packets';
+import {toHexByte} from '../util';
 import Parser from './Parser';
+
+const unitParsers = {
+    access_unit_delimter: (unit, data) => ({
+        primaryPicType: (data[0] & 0xe0) >> 5
+    }),
+    end_of_seq: () => ({}),
+    end_of_stream: () => ({}),
+    sei: (unit, data) => {
+        const finalData = {
+            type: 0,
+            size: 0
+        };
+        let index = 0;
+        while (data[index] === 0xFF) {
+            finalData.type += 0xFF;
+            index++;
+        }
+        finalData.type += data[index++];
+
+        while (data[index] === 0xFF) {
+            finalData.size += 0xFF;
+            index++;
+        }
+        finalData.size += data[index++];
+
+        finalData.payload = data.slice(index, index + finalData.size);
+        return finalData;
+    }
+};
 
 export default class ParserH264 extends Parser {
     constructor() {
@@ -58,13 +89,17 @@ export default class ParserH264 extends Parser {
         }
 
         // Sanitize NAL unit data
-        units.forEach((unit) => this._sanitizeNALUnitData(unit));
+        units.forEach((unit) => {
+            this.sanitizeNALUnitData(unit);
+
+            unit.parsedData = this.parseNALUnit(unit, unit.data);
+        });
 
         // TODO; wrap them with class maybe?
         return units;
     }
 
-    _sanitizeNALUnitData(unit) {
+    sanitizeNALUnitData(unit) {
         const buffer = new Uint8Array(new ArrayBuffer(unit.data.length));
         let dataIndex = 0;
 
@@ -93,5 +128,24 @@ export default class ParserH264 extends Parser {
 
         // Finalize NAL unit
         unit.data = buffer.slice(0, unit.dataLength);
+    }
+
+    parseNALUnit(unit) {
+        // Parse segment
+        const parser = unitParsers[H264_UNITS[unit.type]];
+        if (parser) {
+            unit.name = H264_UNITS[unit.type];
+            unit.parsedData = parser(unit, unit.data);
+        } else {
+            if (H264_UNITS[unit.type]) {
+                console.warn(`No NAl unit parser for: ${H264_UNITS[unit.type]}`);
+            } else {
+                if (!unit.type) {
+                    console.warn(`NAL unit has no tag`, unit);
+                } else {
+                    console.warn(`No NAL unit entry for: ${toHexByte(unit.type)}`);
+                }
+            }
+        }
     }
 };
