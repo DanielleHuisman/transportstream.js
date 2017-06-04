@@ -1,3 +1,5 @@
+import iconv from 'iconv-lite';
+
 export const mergeUint8Arrays = (array1, array2) => {
     const buffer = new Uint8Array(array1.length + array2.length);
     buffer.set(array1, 0);
@@ -20,24 +22,29 @@ export const toHexByte = (byte) => {
 export const stringifyDvb = (data) => {
     if (data[0] == 0xE0 && data[1] >= 0x80 && data[1] <= 0x9F) {
         // TODO: two byte control codes
-        console.warn('CONTROL BYTES');
+        console.warn('Unsupported control code');
+        data = data.slice(2);
     } else if (data[0] >= 0x80 && data[0] <= 0x9F) {
         // TODO: one byte control codes
-        console.warn('CONTROL BYTES');
+        console.warn('Unsupported control code');
+        data = data.slice(1);
     }
 
-    if (data[0] >= 0x20 && data[0] <= 0xFF) {
-        // TODO: default encoding is ISO/IEC 6937
-    } else {
-        // TODO: select encoding based on first byte
-        data = data.slice(1); // TODO: remove this
+    if (data[0] < 0x20) {
+        const encoding = data[0];
+        if (encoding >= 0x01 && encoding <= 0x0B) {
+            return iconv.decode(data.slice(1), `ISO-8859-${4 + encoding}`);
+        } else if (encoding === 0x10) {
+            return iconv.decode(data.slice(3), `ISO-8859-${data[2]}`);
+        }
+
+        // TODO: other encodings (0x11 - 0x15)
+        console.warn(`Unsupported encoding ${toHexByte(encoding)}`);
+        data = data.slice(1);
     }
 
-    let result = '';
-    data.forEach((value) => {
-        result += String.fromCharCode(value);
-    });
-    return result;
+    // TODO: change to ISO/IEC 6937
+    return iconv.decode(data, 'latin1');
 };
 
 export const _parseDate = (data, index) => {
