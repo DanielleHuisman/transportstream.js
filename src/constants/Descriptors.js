@@ -44,7 +44,7 @@ export const DESCRIPTORS = {
     0x4B: 'NVOD_reference_descriptor',
     0x4C: 'time_shifted_service_descriptor',
     0x4D: 'short_event_descriptor',
-    0x4E: 'extended_event_desciptor',
+    0x4E: 'extended_event_descriptor',
     0x4F: 'time_shifted_event_descriptor',
     0x50: 'component_descriptor',
     0x51: 'mosaic_descriptor',

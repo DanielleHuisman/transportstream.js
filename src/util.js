@@ -20,11 +20,19 @@ export const toHexByte = (byte) => {
 export const stringifyDvb = (data) => {
     if (data[0] == 0xE0 && data[1] >= 0x80 && data[1] <= 0x9F) {
         // TODO: two byte control codes
+        console.warn('CONTROL BYTES');
     } else if (data[0] >= 0x80 && data[0] <= 0x9F) {
         // TODO: one byte control codes
+        console.warn('CONTROL BYTES');
     }
 
-    // TODO: default encoding is ISO/IEC 6937
+    if (data[0] >= 0x20 && data[0] <= 0xFF) {
+        // TODO: default encoding is ISO/IEC 6937
+    } else {
+        // TODO: select encoding based on first byte
+        data = data.slice(1); // TODO: remove this
+    }
+
     let result = '';
     data.forEach((value) => {
         result += String.fromCharCode(value);

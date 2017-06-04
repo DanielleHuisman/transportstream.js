@@ -13,7 +13,8 @@ export default class ControllerInformation extends Controller {
     controllerTS = null;
     pids = [];
     handlers = {};
-    services = {}
+    services = {};
+    events = {};
 
     constructor(controllerTS) {
         super('Information');
@@ -85,19 +86,69 @@ export default class ControllerInformation extends Controller {
         let packet = null;
 
         while ((packet = stream.read(1)) !== null) {
-            if (packet instanceof PacketTDT) {
-                this.emit('time-date', packet);
-            } else if (packet instanceof PacketEIT) {
-                this.emit('event', packet);
-            } else if (packet instanceof PacketTOT) {
-                this.emit('time-offset', packet);
-            } else if (packet instanceof PacketSDT) {
+            if (packet instanceof PacketSDT) {
                 for (const service of packet.services) {
                     if (!this.services[service.id]) {
                         this.services[service.id] = service;
                         this.emit('service', service);
                     }
                 }
+            } else if (packet instanceof PacketEIT) {
+                const serviceId = packet.parent.tableIdExtension;
+                if (!this.events[serviceId]) {
+                    this.events[serviceId] = {};
+                }
+                const events = this.events[serviceId];
+
+                for (const rawEvent of packet.events) {
+                    if (!events[rawEvent.id]) {
+                        events[rawEvent.id] = {
+                            id: rawEvent.id,
+                            startTime: rawEvent.startTime,
+                            duration: rawEvent.duration,
+                            hasCA: rawEvent.hasCA,
+                            runningStatus: rawEvent.runningStatus,
+                            name: null,
+                            languageCode: null,
+                            shortDescription: null,
+                            parentalRating: null,
+                            descriptionArray: [],
+                            description: null
+                        };
+                    }
+                    const event = events[rawEvent.id];
+
+                    for (const descriptor of rawEvent.descriptors) {
+                        if (descriptor.name === 'short_event_descriptor') {
+                            event.name = descriptor.parsedData.eventName;
+                            event.languageCode = descriptor.parsedData.languageCode;
+                            event.shortDescription = descriptor.parsedData.text;
+                        } else if (descriptor.name === 'parental_rating_descriptor') {
+                            event.parentalRating = descriptor.parsedData;
+                        } else if (descriptor.name === 'extended_event_descriptor') {
+                            if (event.descriptionArray) {
+                                event.descriptionArray[descriptor.parsedData.number] = descriptor.parsedData.text;
+                                let complete = true;
+                                for (let i = 0; i <= descriptor.parsedData.lastNumber; i++) {
+                                    if (!event.descriptionArray[i]) {
+                                        complete = false;
+                                        break;
+                                    }
+                                }
+                                if (complete) {
+                                    event.description = event.descriptionArray.join('');
+                                    delete event.descriptionArray;
+
+                                    this.emit('event', event);
+                                }
+                            }
+                        }
+                    }
+                }
+            } else if (packet instanceof PacketTDT) {
+                this.emit('time-date', packet);
+            } else if (packet instanceof PacketTOT) {
+                this.emit('time-offset', packet);
             }
         }
     }

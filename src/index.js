@@ -51,13 +51,18 @@ controllerStream.on('streams-updated', (streams, updates) => {
 controllerInformation.enable('service', 'event', 'time');
 controllerInformation.on('service', (service) => {
     const data = service.descriptors[0] && service.descriptors[0].parsedData;
+    console.log(service);
     if (data) {
         console.log('[SDT]', data.name, 'provided by', data.provider);
         document.getElementById('title').textContent = `${data.name} (provided by ${data.provider})`;
     }
 });
-controllerInformation.on('event', (packet) => {
-    console.log('[EIT]', packet);
+controllerInformation.on('event', (event) => {
+    if (event.runningStatus === 1) {
+        console.log('[EIT]', event);
+        document.getElementById('epg-title').textContent = event.name;
+        document.getElementById('epg-description').textContent = event.description;
+    }
 });
 controllerInformation.on('time-date', (packet) => {
     console.log('[TDT]', packet.utc);

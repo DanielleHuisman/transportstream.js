@@ -12,16 +12,27 @@
 
             body {
                 display: flex;
+                flex-direction: column;
                 justify-content: center;
                 align-items: center;
 
                 font-family: sans-serif;
             }
+
+            video {
+                background-color: black;
+                width: 64vw;
+                height: 36vw;
+            }
         </style>
     </head>
     <body>
         <h1 id="title"></h1>
-        <div></div>
+        <video id="video"></video>
+        <section>
+            <h3 id="epg-title"></h3>
+            <p id="epg-description"></p>
+        </section>
 
         <script type="text/javascript" src="dist/transportstream.js"></script>
     </body>

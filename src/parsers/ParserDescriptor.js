@@ -78,6 +78,29 @@ const descriptors = {
         level2: data[0] & 0x0f,
         userByte: data[1]
     })),
+    content_identifier_descriptor: (desc, data) => {
+        const finalData = [];
+
+        let index = 0;
+        while (index < data.length) {
+            const crid = {
+                type: (data[index] & 0xfc) >> 2,
+                location: data[index] & 0x03
+            };
+            index += 2;
+
+            if (crid.location === 0x00) {
+                crid.length = data[index];
+                crid.bytes = data.slice(index + 1, index + 1 + crid.length);
+                index += 1 + crid.length;
+            } else if (crid.location === 0x01) {
+                crid.ref = data[index] << 8 | data[index + 1];
+                index += 2;
+            }
+        }
+
+        return finalData;
+    },
     country_availability_descriptor: (desc, d) => ({
         availaiityFlag: d[0] & 0x80 !== 0,
         countryCodes: split(d, 1, 3, (data, i) => iconv.decode(data.slice(i, i + 3)), 'ISO-8859-1')
@@ -125,6 +148,28 @@ const descriptors = {
         }
         result.additionalInfo = data.slice(start, data.length);
         return result;
+    },
+    extended_event_descriptor: (desc, data) => {
+        const finalData = {
+            number: (data[0] & 0xf0) >> 4,
+            lastNumber: data[0] & 0x0f,
+            languageCode: iconv.decode(Buffer.from(data.slice(1, 4)), 'ISO-8859-1'),
+            text: stringifyDvb(data.slice(6 + data[4], data.length)),
+            itemLength: data[4],
+            items: []
+        };
+        let index = 5;
+        while (index < finalData.itemLength) {
+            const item = {};
+            item.description = stringifyDvb(data.slice(index + 1, index + 1 + data[index]));
+            index += data[index];
+            item.text = stringifyDvb(data.slice(index + 1, index + 1 + data[index]));
+            index += data[index];
+
+            finalData.items.push(item);
+        }
+
+        return finalData;
     },
     frequency_list_descriptor: (desc, d) => ({
         codingType: d[0] & 0x3,
@@ -247,7 +292,7 @@ const descriptors = {
     })),
     short_event_descriptor: (desc, data) => ({
         languageCode: iconv.decode(Buffer.from(data.slice(0, 3)), 'ISO-8859-1'),
-        eventName: stringifyDvb(data.slice(4, 4 + data[3])), // TODO: not sure if correct as there is a special char at position 0
+        eventName: stringifyDvb(data.slice(4, 4 + data[3])),
         text: stringifyDvb(data.slice(5 + data[3], data.length))
     }),
     smoothing_buffer_descriptor: (desc, data) => ({

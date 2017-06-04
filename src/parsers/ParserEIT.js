@@ -1,5 +1,5 @@
 import {PacketEIT, EITEvent} from '../packets';
-import {parseDatetime, parseBCDFullSeconds, stringifyDvb} from '../util';
+import {parseDatetime, parseBCDFullSeconds} from '../util';
 import {parseDescriptor} from './ParserPSI';
 import Parser from './Parser';
 
@@ -18,7 +18,6 @@ export default class ParserEIT extends Parser {
         packet.segmentLastSectionNumber = data[4];
         packet.lastTableId = data[5];
 
-        console.log(stringifyDvb(data));
         // Parse EIT services
         let index = 6;
         while (index < data.length) {
@@ -35,12 +34,11 @@ export default class ParserEIT extends Parser {
             event.runningStatus = (data[index] & 0xe0) >> 5;
             event.hasCA = (data[index] & 0x10) !== 0;
             event.descriptorLength = (data[index] & 0x0f) << 8 | data[index + 1];
-            console.log(event.descriptorLength);
             index += 2;
 
             // Loop over EIT service descriptors
             let subindex = 0;
-            while (subindex < event.descriptorLength) {
+            while (subindex < event.descriptorLength && subindex < data.length - index) {
                 // Parse EIT service descriptor
                 const descriptor = parseDescriptor(data, index + subindex, 'EIT');
                 event.descriptors.push(descriptor);
