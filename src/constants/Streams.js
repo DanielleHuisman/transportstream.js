@@ -38,3 +38,13 @@ export const STREAM_GROUPS = {
     subtitles: [],
     teletext: []
 };
+
+export const STREAM_SHORT_TYPES = {
+    // 0x00: Reserved,
+    0x01: 'MPEG1-2',
+    0x02: 'H.262', // MPEG2-2
+    0x03: 'MPEG1-3',
+    // TODO
+    0x1B: 'H.264', // MPEG4-2
+    // 0x80 - 0xFF: User defined
+};

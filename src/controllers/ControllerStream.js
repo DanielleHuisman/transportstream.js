@@ -108,7 +108,7 @@ export default class ControllerStream extends Controller {
                     }
                     case 'audio': {
                         // Generally speaking better video sources have a higher stream type (fine for now)
-                        score = stream.type;
+                        score = stream.type === 6 ? 0 : stream.type; // TODO: remove skipping of AC3 track
 
                         for (const descriptor of stream.descriptors) {
                             if (descriptor.name === 'ISO_639_language_descriptor') {
@@ -151,7 +151,10 @@ export default class ControllerStream extends Controller {
                 // Check if this stream's score if higher, if so use it
                 if (score > scores[group]) {
                     scores[group] = score;
-                    streams[group] = stream.pid;
+                    streams[group] = {
+                        pid: stream.pid,
+                        type: stream.determinedType
+                    };
                 }
             }
         }
@@ -159,7 +162,7 @@ export default class ControllerStream extends Controller {
         // Check which streams were updated
         const updates = [];
         for (const group of Object.keys(streams)) {
-            if (streams[group] !== this._streams[group]) {
+            if (streams[group].pid !== this._streams[group].pid) {
                 updates.push(group);
             }
         }

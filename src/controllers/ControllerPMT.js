@@ -1,4 +1,4 @@
-import {STREAM_GROUPS, DESCRIPTOR_GROUPS} from '../constants';
+import {STREAM_SHORT_TYPES, STREAM_GROUPS, DESCRIPTOR_GROUPS} from '../constants';
 import Controller from './Controller';
 
 export default class ControllerPMT extends Controller {
@@ -94,6 +94,21 @@ export default class ControllerPMT extends Controller {
                     if (list.indexOf(descriptor.tag) !== -1) {
                         group = name;
                     }
+                }
+            }
+
+            // Determine stream type
+            stream.determinedType = STREAM_SHORT_TYPES[stream.type];
+            if (!stream.determinedType) {
+                if (group === 'audio') {
+                    for (const descriptor of stream.descriptors) {
+                        if (descriptor.tag === 0x6A || descriptor.tag === 0x7A) { // AC3
+                            stream.determinedType = 'AC3';
+                            break;
+                        }
+                    }
+                } else if (group !== 'video') {
+                    stream.determinedType = group;
                 }
             }
 

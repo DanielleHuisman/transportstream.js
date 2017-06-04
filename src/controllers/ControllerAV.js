@@ -4,8 +4,10 @@ import Controller from './Controller';
 export default class ControllerAV extends Controller {
     controllerTS = null;
     parserH264 = new ParserH264();
-    _audioStreamId = -1
-    _videoStreamId = -1
+    _audioStreamId = -1;
+    _audioStreamType = null;
+    _videoStreamId = -1;
+    _videoStreamType = null;
 
     constructor(controllerTS) {
         super('AV');
@@ -28,7 +30,7 @@ export default class ControllerAV extends Controller {
         return this._videoStreamId;
     }
 
-    setAudioStream(streamId) {
+    setAudioStream({pid: streamId, type: streamType}) {
         // Remove the old packet listener
         if (this._audioStreamId >= 0) {
             this.removeListener(this._audioStreamId);
@@ -36,6 +38,7 @@ export default class ControllerAV extends Controller {
 
         // Update the stream
         this._audioStreamId = streamId;
+        this._audioStreamType = streamType;
 
         // Add a new listener if the stream is available
         if (this.controllerTS.hasStream(this._audioStreamId)) {
@@ -43,7 +46,7 @@ export default class ControllerAV extends Controller {
         }
     }
 
-    setVideoStream(streamId) {
+    setVideoStream({pid: streamId, type: streamType}) {
         // Remove the old packet listener
         if (this._videoStreamId >= 0) {
             this.removeListener(this._videoStreamId);
@@ -51,6 +54,7 @@ export default class ControllerAV extends Controller {
 
         // Update the stream
         this._videoStreamId = streamId;
+        this._videoStreamType = streamType;
 
         // Add a new listener if the stream is available
         if (this.controllerTS.hasStream(this._videoStreamId)) {
@@ -75,21 +79,32 @@ export default class ControllerAV extends Controller {
         let packetPES = null;
 
         while ((packetPES = stream.read(1)) !== null) {
-            // const packet = this.parserAAC.parse(packetPES.payload);
+            switch (this._audioStreamType) {
+                case 'AC3': {
+                    // TODO: differentiate between stream types
+                    // const packet = this.parserAC3.parse(packetPES.payload);
 
-            // console.log('audio', packetPES);
+                    // console.log('audio', packetPES);
 
-            const data = packetPES.payload;
-            let offset;
-            for (offset = 0; offset < data.length - 1; offset++) {
-                if ((data[offset] === 0xff) && ((data[offset + 1] & 0xf0) === 0xf0)) {
-                    break;
+                    const data = packetPES.payload;
+                    let offset;
+                    for (offset = 0; offset < data.length - 1; offset++) {
+                        if ((data[offset] === 0xff) && ((data[offset + 1] & 0xf0) === 0xf0)) {
+                            break;
+                        }
+                    }
+
+                    // console.log('start', offset);
+
+                    // this.emit('audio', packetPES.payload.buffer);
+                }
+                case 'MPEG2-3': {
+                    // TODO
+                }
+                case 'MPEG1-3': {
+                    // TODO
                 }
             }
-
-            // console.log('start', offset);
-
-            // this.emit('audio', packetPES.payload.buffer);
         }
     }
 
@@ -98,9 +113,19 @@ export default class ControllerAV extends Controller {
         let packetPES = null;
 
         while ((packetPES = stream.read(1)) !== null) {
-            const units = this.parserH264.parse(packetPES.payload);
+            switch (this._videoStreamType) {
+                case 'H.264': { // MPEG4-2
+                    const units = this.parserH264.parse(packetPES.payload);
 
-            console.log('video', units);
+                    console.log('video', units);
+                }
+                case 'H.262': { // MPEG2-2
+                    // TODO
+                }
+                case 'MPEG1-2': {
+                    // TODO
+                }
+            }
         }
     }
 };
