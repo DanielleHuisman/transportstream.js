@@ -10,6 +10,7 @@ import ParserTDT from './ParserTDT';
 import ParserTOT from './ParserTOT';
 import ParserPMT from './ParserPMT';
 import ParserPES from './ParserPES';
+import ParserH264 from './ParserH264';
 import ParserSubtitles from './ParserSubtitles';
 import ParserSubtitleSegment from './ParserSubtitleSegment';
 
@@ -38,6 +39,7 @@ export {
     ParserTOT,
     ParserPMT,
     ParserPES,
+    ParserH264,
     ParserSubtitles,
     ParserSubtitleSegment
 };

@@ -1,11 +1,9 @@
+import {ParserH264} from '../parsers';
 import Controller from './Controller';
-
-// TODO: Parse audio and video streams based on the stream PID set by another controller: the stream controller.
-//       The stream controller will detemine the program to watch and what audio/video/subtitle streams to use (by default the best ones available).
-//       For video: parse the H.264 NAL units before parsing the MP4 data
 
 export default class ControllerAV extends Controller {
     controllerTS = null;
+    parserH264 = new ParserH264();
     _audioStreamId = -1
     _videoStreamId = -1
 
@@ -77,12 +75,11 @@ export default class ControllerAV extends Controller {
         let packetPES = null;
 
         while ((packetPES = stream.read(1)) !== null) {
-            // const packet = this.parserSubtitles.parse(packetPES.payload);
-            // packet.parent = packetPES;
+            // const packet = this.parserAAC.parse(packetPES.payload);
 
             // console.log('audio', packetPES);
 
-            const data = packetPES.data;
+            const data = packetPES.payload;
             let offset;
             for (offset = 0; offset < data.length - 1; offset++) {
                 if ((data[offset] === 0xff) && ((data[offset + 1] & 0xf0) === 0xf0)) {
@@ -97,14 +94,13 @@ export default class ControllerAV extends Controller {
     }
 
     handleVideoPackets = () => {
-        // const stream = this.controllerTS.getStream(this._videoStreamId);
-        // let packetPES = null;
-        //
-        // while ((packetPES = stream.read(1)) !== null) {
-        //     const packet = this.parserSubtitles.parse(packetPES.payload);
-        //     packet.parent = packetPES;
-        //
-        //     console.log('video', packetPES);
-        // }
+        const stream = this.controllerTS.getStream(this._videoStreamId);
+        let packetPES = null;
+
+        while ((packetPES = stream.read(1)) !== null) {
+            const units = this.parserH264.parse(packetPES.payload);
+
+            console.log('video', units);
+        }
     }
 };

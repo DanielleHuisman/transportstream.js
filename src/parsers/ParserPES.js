@@ -39,7 +39,7 @@ export default class ParserPES extends Parser {
 
         // Parse PES header
         packet.streamId = data[2];
-        packet.pesLength = data[3] << 8 | data[4];
+        packet.payloadLength = data[3] << 8 | data[4];
 
         // Define packet payload start
         let start = 5;
@@ -168,7 +168,7 @@ export default class ParserPES extends Parser {
         start = 8 + packet.headerLength;
 
         // Parse payload
-        packet.payload = data.slice(start, start + packet.pesLength);
+        packet.payload = data.slice(start, packet.payloadLength === 0 ? data.length : start + packet.payloadLength);
 
         return packet;
     }
