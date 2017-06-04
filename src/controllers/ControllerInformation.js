@@ -1,10 +1,11 @@
 import {REVERSE_PACKET_IDENTIFIERS} from '../constants';
-import {PacketSDT, PacketTDT, PacketTOT} from '../packets';
+import {PacketSDT, PacketEIT, PacketTDT, PacketTOT} from '../packets';
 
 import Controller from './Controller';
 
 const PIDS = {
     time: REVERSE_PACKET_IDENTIFIERS.SDT,
+    event: REVERSE_PACKET_IDENTIFIERS.EIT,
     service: REVERSE_PACKET_IDENTIFIERS.TDT
 };
 
@@ -86,6 +87,8 @@ export default class ControllerInformation extends Controller {
         while ((packet = stream.read(1)) !== null) {
             if (packet instanceof PacketTDT) {
                 this.emit('time-date', packet);
+            } else if (packet instanceof PacketEIT) {
+                this.emit('event', packet);
             } else if (packet instanceof PacketTOT) {
                 this.emit('time-offset', packet);
             } else if (packet instanceof PacketSDT) {

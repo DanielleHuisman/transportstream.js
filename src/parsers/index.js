@@ -5,6 +5,7 @@ import ParserDescriptor from './ParserDescriptor';
 import ParserPAT from './ParserPAT';
 import ParserNIT from './ParserNIT';
 import ParserSDT from './ParserSDT';
+import ParserEIT from './ParserEIT';
 import ParserTDT from './ParserTDT';
 import ParserTOT from './ParserTOT';
 import ParserPMT from './ParserPMT';
@@ -17,6 +18,7 @@ export const tableParsers = {
     PAT: new ParserPAT(),
     NIT: new ParserNIT(),
     SDT: new ParserSDT(),
+    EIT: new ParserEIT(),
     TDT: new ParserTDT(),
     TOT: new ParserTOT(),
     PMT: new ParserPMT()
@@ -31,6 +33,7 @@ export {
     ParserPAT,
     ParserNIT,
     ParserSDT,
+    ParserEIT,
     ParserTDT,
     ParserTOT,
     ParserPMT,

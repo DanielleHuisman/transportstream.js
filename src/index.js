@@ -48,19 +48,22 @@ controllerStream.on('streams-updated', (streams, updates) => {
     }
 });
 
-controllerInformation.enable('time', 'service');
-controllerInformation.on('time-date', (packet) => {
-    console.log('[TDT]', packet.utc);
-});
-controllerInformation.on('time-offset', (packet) => {
-    console.log('[TOT]', packet.utc, 'offset:', packet.descriptors[0] ? packet.descriptors[0].parsedData[0].offset : undefined);
-});
+controllerInformation.enable('service', 'event', 'time');
 controllerInformation.on('service', (service) => {
     const data = service.descriptors[0] && service.descriptors[0].parsedData;
     if (data) {
         console.log('[SDT]', data.name, 'provided by', data.provider);
         document.getElementById('title').textContent = `${data.name} (provided by ${data.provider})`;
     }
+});
+controllerInformation.on('event', (packet) => {
+    console.log('[EIT]', packet);
+});
+controllerInformation.on('time-date', (packet) => {
+    console.log('[TDT]', packet.utc);
+});
+controllerInformation.on('time-offset', (packet) => {
+    console.log('[TOT]', packet.utc, 'offset:', packet.descriptors[0] ? packet.descriptors[0].parsedData[0].offset : undefined);
 });
 
 // // Create media source

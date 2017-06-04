@@ -85,6 +85,11 @@ export const parseBCDSeconds = (data, index) => {
     return 60 * (((data[index] & 0xc) * 10 + (data[index] & 0x3)) * 60 + (data[index + 1] & 0xc) * 10 + (data[index + 1] & 0x3));
 };
 
+export const parseBCDFullSeconds = (data, index) => {
+    return 60 * (((data[index] & 0xc) * 10 + (data[index] & 0x3)) * 60 + (data[index + 1] & 0xc) * 10 + (data[index + 1] & 0x3)) +
+        (data[index + 2] & 0xc) * 10 + (data[index + 2] & 0x3);
+};
+
 export const parseDatetimeBCD = (data, index) => {
     // Parse date
     const {years, months, days} = _parseDate(data, index);

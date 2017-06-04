@@ -245,6 +245,11 @@ const descriptors = {
         id: data[i] << 8 | data[i + 1],
         type: data[i + 2]
     })),
+    short_event_descriptor: (desc, data) => ({
+        languageCode: iconv.decode(Buffer.from(data.slice(0, 3)), 'ISO-8859-1'),
+        eventName: stringifyDvb(data.slice(4, 4 + data[3])), // TODO: not sure if correct as there is a special char at position 0
+        text: stringifyDvb(data.slice(5 + data[3], data.length))
+    }),
     smoothing_buffer_descriptor: (desc, data) => ({
         sbLeakRate: (data[0] & 0x30) << 16 | data[1] << 8 | data[2],
         sbSize: (data[3] & 0x30) << 16 | data[4] << 8 | data[5],

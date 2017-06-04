@@ -99,8 +99,8 @@ const segments = {
                 } else if (pixelData.type === 0x20) {
                     pixelData.table2to4 = {};
                     for (let j = 0; j < 2; j++) {
-                        pixelData.pixelData[j] = data[i + si] & 0xf0;
-                        pixelData.pixelData[j + 1] = data[i + si] & 0x0f;
+                        pixelData.table2to4[j] = data[i + si] & 0xf0;
+                        pixelData.table2to4[j + 1] = data[i + si] & 0x0f;
                     }
                     si += 16;
                 } else if (pixelData.type === 0x21) {
@@ -122,12 +122,14 @@ const segments = {
             };
 
             while (subindex < finalData.topFieldLength) {
+                break; // TODO
                 const pixelData = parsePixelData(subindex);
                 finalData.topField.push(pixelData);
                 subindex += pixelData.length;
             }
 
             while (index < finalData.bottomFieldLength) {
+                break; // TODO
                 const pixelData = parsePixelData(subindex);
                 finalData.topField.push(pixelData);
                 subindex += pixelData.length;

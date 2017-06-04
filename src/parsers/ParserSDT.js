@@ -23,7 +23,7 @@ export default class ParserSDT extends Parser {
             service.id = data[index] << 8 | data[index + 1];
             service.hasEITSchedule = (data[index + 2] & 0x02) !== 0;
             service.hasEITFollowing = (data[index + 2] & 0x01) !== 0;
-            service.runningStatus = (data[index + 3] & 0xc0) >> 5;
+            service.runningStatus = (data[index + 3] & 0xe0) >> 5;
             service.hasCA = (data[index + 3] & 0x10) !== 0;
             service.descriptorLength = (data[index + 3] & 0x0f) << 8 | data[index + 4];
             index += 5;
