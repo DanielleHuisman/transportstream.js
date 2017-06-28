@@ -2,7 +2,7 @@
 
 JavaScript MPEG transport stream decoder/player.
 
-**Note:** *this project is heavily under development and no where no complete.*
+**Note:** *this project is heavily under development and nowhere near complete.*
 
 ## Implemented standards
 - [ ] Transport Stream (ISO/IEC 13818-1)
