@@ -45,6 +45,8 @@ export default class ParserH264 extends Parser {
             console.warn('PES doesn\'t directly start with NAL unit, overflow is currently not implemented, so things might break');
         }
 
+        // TODO: H264 uses ExpGolomb, so none of the code below really works
+
         const units = [];
 
         let offset;
