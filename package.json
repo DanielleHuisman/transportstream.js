@@ -15,7 +15,8 @@
     "lint": "eslint src --color",
     "build": "browserify src/index.js -o dist/transportstream.js -t babelify",
     "watch": "watchify src/index.js -o dist/transportstream.js -t babelify",
-    "serve": "http-server . -p 3000 -c-1"
+    "serve": "http-server . -p 3000 -c-1",
+    "serve-example": "http-server example -p 3001 -c-1"
   },
   "dependencies": {
     "crc-32": "^1.0.1",
