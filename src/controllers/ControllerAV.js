@@ -97,12 +97,15 @@ export default class ControllerAV extends Controller {
                     // console.log('start', offset);
 
                     // this.emit('audio', packetPES.payload.buffer);
+                    break;
                 }
                 case 'MPEG2-3': {
                     // TODO
+                    break;
                 }
                 case 'MPEG1-3': {
                     // TODO
+                    break;
                 }
             }
         }
@@ -118,12 +121,15 @@ export default class ControllerAV extends Controller {
                     const units = this.parserH264.parse(packetPES.payload);
 
                     console.log('video', units);
+                    break;
                 }
                 case 'H.262': { // MPEG2-2
                     // TODO
+                    break;
                 }
                 case 'MPEG1-2': {
                     // TODO
+                    break;
                 }
             }
         }

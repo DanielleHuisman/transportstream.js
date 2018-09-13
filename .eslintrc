@@ -37,6 +37,7 @@
         "comma-dangle": 0,
         "require-jsdoc": 0,
         "quote-props": [1, 'as-needed'],
+        "no-unused-vars": 1,
 
         "new-cap": 0,
         "object-curly-spacing": 0,

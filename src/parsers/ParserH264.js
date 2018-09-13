@@ -45,8 +45,6 @@ export default class ParserH264 extends Parser {
             console.warn('PES doesn\'t directly start with NAL unit, overflow is currently not implemented, so things might break');
         }
 
-        // TODO: H264 uses ExpGolomb, so none of the code below really works
-
         const units = [];
 
         let offset;
@@ -94,7 +92,7 @@ export default class ParserH264 extends Parser {
         units.forEach((unit) => {
             this.sanitizeNALUnitData(unit);
 
-            unit.parsedData = this.parseNALUnit(unit, unit.data);
+            this.parseNALUnit(unit, unit.data);
         });
 
         // TODO; wrap them with class maybe?
@@ -108,8 +106,8 @@ export default class ParserH264 extends Parser {
         let index = 0;
 
         let lastStop = index;
-        while (index < unit.data.length) {
-            if (index + 2 < unit.data.length && unit.data[index] === 0x00 && unit.data[index + 1] === 0x00 && unit.data[index + 2] === 0x03) {
+        while (index < unit.data.length - 2) {
+            if (unit.data[index] === 0x00 && unit.data[index + 1] === 0x00 && unit.data[index + 2] === 0x03) {
                 // Append data slice (minus 0x03)
                 const slice = unit.data.subarray(lastStop, index + 2);
                 buffer.set(slice, dataIndex);
@@ -135,8 +133,8 @@ export default class ParserH264 extends Parser {
     parseNALUnit(unit) {
         // Parse segment
         const parser = unitParsers[H264_UNITS[unit.type]];
+        unit.name = H264_UNITS[unit.type];
         if (parser) {
-            unit.name = H264_UNITS[unit.type];
             unit.parsedData = parser(unit, unit.data);
         } else {
             if (H264_UNITS[unit.type]) {
