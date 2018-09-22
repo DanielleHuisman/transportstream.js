@@ -40,7 +40,7 @@ controllerStream.on('streams-updated', (streams, updates) => {
         controllerAV.setAudioStream(streams.audio);
     }
     if (updates.indexOf('video') !== -1) {
-        controllerAV.setVideoStream(streams.video);
+        // controllerAV.setVideoStream(streams.video);
     }
     if (updates.indexOf('subtitles') !== -1) {
         // controllerSubtitles.setStream(streams.subtitles);
