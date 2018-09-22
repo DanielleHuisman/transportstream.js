@@ -233,6 +233,7 @@ const segments = {
                     console.log('stream offset', stream.offset(), 'bit offest', stream.bitPosition);
                     stream.advance(bits % 8);
                     si += Math.ceil(bits / 8);
+                    console.log('stream offset', stream.offset(), 'bit offest', stream.bitPosition);
 
                     console.log('MAGIC 4-BIT CODE', pixelData.code4bit);
                 } else if (pixelData.type === 0x12) {
@@ -240,13 +241,17 @@ const segments = {
 
                     pixelData.code8bit = [];
                     let end = false;
+                    let bits = 0;
                     while (!end) {
                         const code1 = stream.read(8);
+                        bits += 8;
                         if (code1 !== 0) {
                             pixelData.code8bit.push(code1);
                         } else {
+                            bits++;
                             if (stream.read(1) === 0) {
                                 const runLength = stream.read(7);
+                                bits += 7;
                                 if (runLength === 0) {
                                     end = true;
                                 } else {
@@ -257,6 +262,7 @@ const segments = {
                             } else {
                                 const runLength = stream.read(7);
                                 const code2 = stream.read(8);
+                                bits += 15;
                                 for (let i = 0; i < runLength; i++) {
                                     pixelData.code8bit.push(code2);
                                 }
@@ -264,7 +270,8 @@ const segments = {
                         }
                     }
 
-                    si += pixelData.code8bit.length;
+                    stream.advance(bits % 8);
+                    si += Math.ceil(bits / 8);
 
                     console.log('MAGIC 8-BIT CODE', pixelData.code8bit);
                 } else if (pixelData.type === 0x20) {

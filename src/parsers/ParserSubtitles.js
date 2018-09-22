@@ -1,6 +1,7 @@
 import {BufferList, Buffer, Stream, Bitstream} from 'av';
 
 import {PacketSubtitles, SubtitleSegment} from '../packets';
+import {toHexByte} from '../util';
 import Parser from './Parser';
 import ParserSubtitleSegment from './ParserSubtitleSegment';
 
@@ -49,6 +50,12 @@ export default class ParserSubtitles extends Parser {
             // Parse subtitle segment
             const segment = parseSubtitleSegment(bitStream);
             packet.segments.push(segment);
+
+            console.log('subtitle bytes left', stream.remainingBytes(), 'first bye', toHexByte(stream.peekUInt8()));
+
+            if (stream.peekUInt8() !== 0x0f) {
+                console.error('ERRORERETET');
+            }
         }
 
         return packet;
