@@ -42,19 +42,22 @@ export default class ParserSubtitles extends Parser {
         const bitStream = new Bitstream(stream);
 
         // Parse subtitles header
-        packet.identifier = stream.readUInt8();
-        packet.streamId = stream.readUInt8();
+        packet.identifier = bitStream.read(8);
+        packet.streamId = bitStream.read(8);
 
         // Loop over all subtitle segments
-        while (stream.readUInt8() === 0x0f && stream.remainingBytes() > 0) {
+        while (bitStream.read(8) === 0x0f && stream.remainingBytes() > 0) {
             // Parse subtitle segment
             const segment = parseSubtitleSegment(bitStream);
             packet.segments.push(segment);
 
-            console.log('subtitle bytes left', stream.remainingBytes(), 'first bye', toHexByte(stream.peekUInt8()));
+            console.log('subtitle bytes left', stream.remainingBytes(), 'first byte', toHexByte(bitStream.peek(8)));
 
-            if (stream.peekUInt8() !== 0x0f) {
-                console.error('ERRORERETET');
+            if (bitStream.peek(8) !== 0x0f) {
+                bitStream.rewind(1);
+                const b = bitStream.read(8);
+
+                console.error('ERRORERETET', 'prev', toHexByte(b));
             }
         }
 

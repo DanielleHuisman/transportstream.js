@@ -80,7 +80,8 @@ const segments = {
             data.bottomFieldLength = stream.read(16);
             data.topField = [];
             data.bottomField = [];
-            let subindex = 0;
+
+            console.log('top', data.topFieldLength, 'bottom', data.bottomFieldLength);
 
             const parsePixelData = (i) => {
                 const pixelData = {
@@ -157,7 +158,7 @@ const segments = {
 
                     console.log('MAGIC 2-BIT CODE', pixelData.code2bit);
                 } else if (pixelData.type === 0x11) {
-                    console.log('4 bit code');
+                    console.log('4 bit code', stream.available(4));
 
                     pixelData.code4bit = [];
                     let end = false;
@@ -307,10 +308,13 @@ const segments = {
                 return pixelData;
             };
 
+
+            let subindex = 0;
+            let line = [];
+
             console.group();
             console.log('TOP FIELD', data.topFieldLength, subindex);
 
-            let line = [];
             while (subindex < data.topFieldLength) {
                 const pixelData = parsePixelData(subindex);
                 if (pixelData.type === 0xF0) {
@@ -327,8 +331,12 @@ const segments = {
             console.groupEnd();
 
 
+            subindex = 0;
+            line = [];
+
             console.group();
             console.log('BOTTOM FIELD', data.bottomFieldLength, subindex);
+
             while (subindex < data.bottomFieldLength) {
                 console.log(toHexByte(stream.peek(8)));
                 // break;
@@ -348,6 +356,13 @@ const segments = {
             }
             console.log(data.bottomField);
             console.groupEnd();
+
+            const stuffingLength = desc.length - 7 - data.topFieldLength - data.bottomFieldLength;
+            if (stuffingLength === 1) {
+                stream.advance(8);
+            } else if (stuffingLength > 1) {
+                console.error('STUFFING LENGTH > 1');
+            }
         } else if (data.codingMethod === 1) {
             data.length = stream.read(8);
             data.text = [];
