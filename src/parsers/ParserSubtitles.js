@@ -1,3 +1,5 @@
+import {BufferList, Buffer, Stream, Bitstream} from 'av';
+
 import {PacketSubtitles, SubtitleSegment} from '../packets';
 import Parser from './Parser';
 import ParserSubtitleSegment from './ParserSubtitleSegment';
@@ -5,20 +7,20 @@ import ParserSubtitleSegment from './ParserSubtitleSegment';
 // Initialize subtitle segment parser
 const parserSegment = new ParserSubtitleSegment();
 
-export const parseSubtitleSegment = (data, index) => {
+export const parseSubtitleSegment = (stream) => {
     // Initialize segment
     const segment = new SubtitleSegment();
 
     // Parse segment header
-    segment.type = data[index + 1];
-    segment.pageId = data[index + 2] << 8 | data[index + 3];
-    segment.length = data[index + 4] << 8 | data[index + 5];
+    segment.type = stream.read(8);
+    segment.pageId = stream.read(16);
+    segment.length = stream.read(16);
 
     // Parse segment data
-    segment.data = data.slice(index + 6, index + 6 + segment.length);
+    // segment.data = data.slice(index + 6, index + 6 + segment.length);
 
     // Parse segment specific data
-    parserSegment.parse(segment);
+    parserSegment.parse(segment, stream);
 
     return segment;
 };
@@ -32,21 +34,22 @@ export default class ParserSubtitles extends Parser {
         // Initialize packet
         const packet = new PacketSubtitles();
 
+        const bufferList = new BufferList();
+        const buffer = new Buffer(new Uint8Array(data));
+        bufferList.append(buffer);
+        const stream = new Stream(bufferList);
+        const bitStream = new Bitstream(stream);
+
         // Parse subtitles header
-        packet.identifier = data[0];
-        packet.streamId = data[1];
+        packet.identifier = stream.readUInt8();
+        packet.streamId = stream.readUInt8();
 
         // Loop over all subtitle segments
-        let index = 2;
-        while (data[index] === 0x0f && index < data.length) {
+        while (stream.readUInt8() === 0x0f && stream.remainingBytes() > 0) {
             // Parse subtitle segment
-            const segment = parseSubtitleSegment(data, index);
+            const segment = parseSubtitleSegment(bitStream);
             packet.segments.push(segment);
-
-            index += 6 + segment.length;
         }
-
-        console.log(index);
 
         return packet;
     }
