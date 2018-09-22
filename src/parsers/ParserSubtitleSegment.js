@@ -75,8 +75,6 @@ const segments = {
         data.hasNonModidyingColour = stream.read(1) !== 0;
         stream.advance(1);
 
-        let index = 3;
-
         if (data.codingMethod === 0) {
             data.topFieldLength = stream.read(16);
             data.bottomFieldLength = stream.read(16);
@@ -311,7 +309,6 @@ const segments = {
 
             console.group();
             console.log('TOP FIELD', data.topFieldLength, subindex);
-            let test = 0;
 
             let line = [];
             while (subindex < data.topFieldLength) {
@@ -351,8 +348,6 @@ const segments = {
             }
             console.log(data.bottomField);
             console.groupEnd();
-
-            index += subindex;
         } else if (data.codingMethod === 1) {
             data.length = stream.read(8);
             data.text = [];
