@@ -2,7 +2,7 @@ import hyperquest from 'hyperquest';
 
 import config from './config';
 import {ControllerTS, ControllerPMT, ControllerStream, ControllerAV, ControllerSubtitles, ControllerInformation} from './controllers';
-import Player from './player';
+import {Player} from './player';
 
 // Open input stream (HTTP stream)
 const inputStream = hyperquest.get(config.url);
@@ -62,7 +62,7 @@ controllerInformation.on('service', (service) => {
     }
 });
 controllerInformation.on('event', (event) => {
-    if (event.runningStatus === 1) {
+    if (event.runningStatus === 4) {
         console.log('[EIT]', event);
         document.getElementById('epg-title').textContent = event.name;
         document.getElementById('epg-description').textContent = event.description;
