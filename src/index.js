@@ -43,8 +43,7 @@ controllerStream.on('streams-updated', (streams, updates) => {
         // controllerAV.setVideoStream(streams.video);
     }
     if (updates.indexOf('subtitles') !== -1) {
-        // controllerSubtitles.setStream(streams.subtitles);
-        controllerSubtitles.setStream(2103);
+        controllerSubtitles.setStream(streams.subtitles.pid);
     }
 });
 
