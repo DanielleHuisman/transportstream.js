@@ -147,6 +147,9 @@ controllerSubtitles.on('subtitles', (packet) => {
                 for (const region of segment.parsedData.regions) {
                     version.regions[region.id] = region;
                 }
+
+                version.timeOut = segment.parsedData.timeOut;
+                version.state = segment.parsedData.state;
             } else if (segment.type === 17) {
                 version.regions[segment.parsedData.id] = {
                     ...version.regions[segment.parsedData.id],
