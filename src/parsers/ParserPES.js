@@ -1,6 +1,6 @@
 import {ParseError} from '../errors';
 import {PacketPES} from '../packets';
-import {toHex, toHexByte} from '../util';
+import {toHex} from '../util';
 import Parser from './Parser';
 
 export const streamsWithoutHeader = [
@@ -15,16 +15,12 @@ export const streamsWithoutHeader = [
 ];
 
 // PTS/DTS are 33 bits therefore we can't use bitwise operators in JavaScript as bitwise operators treat their operands as a sequence of 32 bits
-const parseTimestamp = (data, start) => {
-    // TODO: fix this function
-    // console.log('PTS', Array.from(data.slice(start, start + 5)).map((d) => toHexByte(d)));
-
-    return (data[start] & 0x0e) * (1 << 29) +
+const parseTimestamp = (data, start) =>
+    (data[start] & 0x0e) * (1 << 29) +
     data[start + 1] * (1 << 22) +
     (data[start + 2] & 0xfe) * (1 << 14) +
     data[start + 3] * (1 << 7) +
     (data[start + 4] >> 1);
-};
 
 export default class ParserPES extends Parser {
     constructor() {
