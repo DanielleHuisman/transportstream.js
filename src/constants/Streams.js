@@ -27,6 +27,8 @@ export const STREAM_TYPES = {
     0x19: 'Metadata carried in ISO/IEC 13818-6 Synchronized Download Protocol',
     0x1A: 'IPMP stream (defined in ISO/IEC 13818-11, MPEG-2 IPMP)',
     0x1B: 'AVC video stream as defined in ITU-T Rec. H.264 | ISO/IEC 14496-10 Video',
+    // 0x1C - 0x23: Reserved for ITU-T Rec. H.222.0 and ISO/IEC 13818-1
+    0x24: 'HEVC video stream as defined in ITU-T Rec. H.265 | ISO/IEC 23008–2 Video',
     // 0x1C - 0x7E: Reserved for ITU-T Rec. H.222.0 and ISO/IEC 13818-1
     0x7F: 'IPMP stream'
     // 0x80 - 0xFF: User defined
@@ -41,10 +43,16 @@ export const STREAM_GROUPS = {
 
 export const STREAM_SHORT_TYPES = {
     // 0x00: Reserved,
-    0x01: 'MPEG1-2',
-    0x02: 'H.262', // MPEG2-2
-    0x03: 'MPEG1-3',
+    0x01: 'MPEG-1 Part 2',
+    0x02: 'H.262', // MPEG-2 Part 2
+    0x03: 'MPEG-1 Part 3', // MP3 (MPEG-1)
+    0x04: 'MPEG-2 Part 3', // MP3 (MPEG-2)
     // TODO
-    0x1B: 'H.264', // MPEG4-2
+    0x10: 'MPEG-4 Part 2',
+    0x11: 'MPEG-4 Part 3',
+    // TODO
+    0x1B: 'H.264', // MPEG-4 Part 10
+    // TODO
+    0x24: 'H.265', // MPEG-H Part 2
     // 0x80 - 0xFF: User defined
 };
