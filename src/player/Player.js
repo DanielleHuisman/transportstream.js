@@ -1,10 +1,14 @@
+import SubtitleRenderer from './SubtitleRenderer';
+
 export default class Player {
     constructor(mount, width, height) {
         this.mount = mount;
         this.width = width;
         this.height = height;
+        this.renderers = [];
 
         this.initialize();
+        this.start();
     }
 
     initialize() {
@@ -39,6 +43,8 @@ export default class Player {
 
         // Render loading text
         this.renderLoading();
+
+        this.renderers.push(new SubtitleRenderer(this));
     }
 
     resize(width, height) {
@@ -65,5 +71,35 @@ export default class Player {
         this.context.textAlign = 'center';
         this.context.textBaseline = 'middle';
         this.context.fillText('Loading', this.width / 2, this.height / 2);
+    }
+
+    start() {
+        if (!this.running) {
+            this.running = true;
+
+            this.run();
+        }
+    }
+
+    stop() {
+        this.running = false;
+    }
+
+    run() {
+        window.requestAnimationFrame(() => {
+            this.render();
+
+            if (this.running) {
+                this.run();
+            }
+        });
+    }
+
+    render() {
+        this.context.clearRect(0, 0, this.width, this.height);
+
+        for (const renderer of this.renderers) {
+            renderer.render();
+        }
     }
 };
