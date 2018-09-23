@@ -2,6 +2,7 @@ import hyperquest from 'hyperquest';
 
 import config from './config';
 import {ControllerTS, ControllerPMT, ControllerStream, ControllerAV, ControllerSubtitles, ControllerInformation} from './controllers';
+import Player from './player';
 
 // Open input stream (HTTP stream)
 const inputStream = hyperquest.get(config.url);
@@ -13,6 +14,9 @@ const controllerStream = new ControllerStream(controllerTS, controllerPMT);
 const controllerAV = new ControllerAV(controllerTS);
 const controllerSubtitles = new ControllerSubtitles(controllerTS);
 const controllerInformation = new ControllerInformation(controllerTS);
+
+// Initialize player
+const player = new Player(document.getElementById('player'), 1280, 720);
 
 // Register event handlers
 controllerTS.on('pid', (pid) => {
