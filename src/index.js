@@ -80,20 +80,48 @@ const yuvToRgb = (color) => {
     return `rgb(${r}, ${g}, ${b})`;
 };
 
-const renderClut = (clut) => {
+const renderClut = (versionId, clut) => {
     if (!clut) {
         return;
     }
 
-    document.getElementById(`test-clut-${clut.id}`).innerHTML = '';
     for (const entry of Object.values(clut.entries)) {
         const unit = document.createElement('div');
         unit.textContent = `color ${entry.id}`;
         unit.style.color = yuvToRgb(entry);
 
-        document.getElementById(`test-clut-${clut.id}`).appendChild(unit);
+        document.getElementById(`test-clut-${versionId}-${clut.id}`).appendChild(unit);
     }
 };
+
+const tr0 = document.createElement('tr');
+let td = document.createElement('td');
+td.textContent = 'CLUT 0';
+td.style.fontWeight = 'bold';
+tr0.appendChild(td);
+
+const tr1 = document.createElement('tr');
+td = document.createElement('td');
+td.textContent = 'CLUT 1';
+td.style.fontWeight = 'bold';
+tr1.appendChild(td);
+
+for (let i = 0; i < 16; i++) {
+    const td0 = document.createElement('td');
+    td0.id = `test-clut-${i}-0`;
+    const td1 = document.createElement('td');
+    td1.id = `test-clut-${i}-1`;
+
+    const th = document.createElement('th');
+    th.textContent = `Version ${i}`;
+
+    tr0.appendChild(td0);
+    tr1.appendChild(td1);
+    document.getElementById('test-clut-header').appendChild(th);
+}
+
+document.getElementById('test-clut-body').appendChild(tr0);
+document.getElementById('test-clut-body').appendChild(tr1);
 
 controllerSubtitles.on('subtitles', (packet) => {
     // console.log(packet);
@@ -107,6 +135,7 @@ controllerSubtitles.on('subtitles', (packet) => {
         if (segment.type >= 16 && segment.type < 20) {
             if (!page[segment.parsedData.versionNumber]) {
                 page[segment.parsedData.versionNumber] = {
+                    version: segment.parsedData.versionNumber,
                     regions: {},
                     objects: {},
                     cluts: {}
@@ -133,11 +162,14 @@ controllerSubtitles.on('subtitles', (packet) => {
 
     console.log(pages);
 
-    if (pages[2] && pages[2][0]) {
-        console.log('found test clut');
+    for (const page of Object.values(pages)) {
+        for (const version of Object.values(page)) {
+            document.getElementById(`test-clut-${version.version}-0`).innerHTML = '';
+            document.getElementById(`test-clut-${version.version}-1`).innerHTML = '';
 
-        renderClut(pages[2][0].cluts[0]);
-        renderClut(pages[2][0].cluts[1]);
+            renderClut(version.version, version.cluts[0]);
+            renderClut(version.version, version.cluts[1]);
+        }
     }
 });
 
