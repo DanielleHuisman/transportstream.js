@@ -16,7 +16,8 @@ const controllerSubtitles = new ControllerSubtitles(controllerTS);
 const controllerInformation = new ControllerInformation(controllerTS);
 
 // Initialize player
-const player = new Player(document.getElementById('player'), 1280, 720);
+const player = new Player(document.getElementById('player'), 720, 576);
+player.resize(1280, 720);
 
 // Register event handlers
 controllerTS.on('pid', (pid) => {
