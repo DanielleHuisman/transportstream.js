@@ -131,6 +131,8 @@ document.getElementById('test-clut-body').appendChild(tr1);
 controllerSubtitles.on('subtitles', (packet) => {
     // console.log(packet);
 
+    player.renderers[0].onPacket(packet);
+
     for (const segment of packet.segments) {
         if (!pages[segment.pageId]) {
             pages[segment.pageId] = {};
@@ -168,7 +170,7 @@ controllerSubtitles.on('subtitles', (packet) => {
         }
     }
 
-    console.log(pages);
+    // console.log(pages);
 
     for (const page of Object.values(pages)) {
         for (const version of Object.values(page)) {
