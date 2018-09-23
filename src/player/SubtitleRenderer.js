@@ -82,11 +82,14 @@ export default class SubtitleRenderer extends Renderer {
         }
 
         for (const region of Object.values(regions)) {
+            const offsetX = region.horizontalAddress + (this.player.width - region.width) / 2;
+            const offsetY = region.verticalAddress;
+
             this.context.fillStyle = COLORS[region.id];
-            this.context.fillRect(region.horizontalAddress, region.verticalAddress, region.width, region.height);
+            this.context.fillRect(offsetX, offsetY, region.width, region.height);
 
             for (const object1 of region.objects) {
-                const image = this.context.getImageData(region.horizontalAddress, region.verticalAddress, region.width, region.height);
+                const image = this.context.getImageData(offsetX, offsetY, region.width, region.height);
 
                 const object2 = objects[object1.id];
                 if (object2) {
@@ -138,7 +141,7 @@ export default class SubtitleRenderer extends Renderer {
                     }
                 }
 
-                this.context.putImageData(image, region.horizontalAddress, region.verticalAddress);
+                this.context.putImageData(image, offsetX, offsetY);
             }
         }
     }
