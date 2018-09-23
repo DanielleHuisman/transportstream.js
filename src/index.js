@@ -71,6 +71,10 @@ controllerInformation.on('time-offset', (packet) => {
     console.log('[TOT]', packet.utc, 'offset:', packet.descriptors[0] ? packet.descriptors[0].parsedData[0].offset : undefined);
 });
 
+controllerSubtitles.on('subtitles', (packet) => {
+    console.log(packet);
+});
+
 // // Create media source
 // const buffers = [];
 // let isLoading = false;

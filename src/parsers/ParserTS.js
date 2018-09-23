@@ -39,6 +39,8 @@ export default class ParserTS extends Parser {
         if (packet.hasAdaption) {
             packet.adaptionLength = data[4];
 
+            const adaptionStart = start + 1;
+
             if (packet.adaptionLength === 0) {
                 packet.hasAdaption = false;
             } else {
@@ -122,13 +124,10 @@ export default class ParserTS extends Parser {
 
                     start += packet.adaptionExtensionLength;
                 }
-            }
-        }
 
-        // Parse packet pointer
-        if (packet.payloadUnitStartIndicator) {
-            packet.fillerBytes = data[start];
-            start += 1 + packet.fillerBytes;
+                // Skip adaption stuffing bytes
+                start = adaptionStart + packet.adaptionLength;
+            }
         }
 
         // Parse packet payload

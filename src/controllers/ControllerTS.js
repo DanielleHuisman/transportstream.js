@@ -68,8 +68,8 @@ export default class ControllerTS extends Controller {
 
                     // If a new payload starts parse the PID buffer and push the result to the PID stream
                     if (packetTS.payloadUnitStartIndicator && this._pidBuffers[packetTS.pid].length > 0) {
-                        // Check if the PID stream has started (prevents incomplete packages) and if it's enabled (prevents unnecesarry parsing)
-                        if (this._pidStarted[packetTS.pid] && this.isStreamEnabled(packetTS.pid)) {
+                        // Check if the PID stream is enabled (prevents unnecesarry parsing)
+                        if (this.isStreamEnabled(packetTS.pid)) {
                             // Parse the packet
                             const packet = this.parsePacket(packetTS.pid, this._pidBuffers[packetTS.pid]);
 
@@ -81,9 +81,6 @@ export default class ControllerTS extends Controller {
                             // Push the packet to the PID stream
                             this._pidStreams[packetTS.pid].push(packet);
                         }
-
-                        // Mark the PID stream as started (prevents incomplete packages)
-                        this._pidStarted[packetTS.pid] = true;
 
                         // Clear the PID buffer
                         this._pidBuffers[packetTS.pid] = new Uint8Array();

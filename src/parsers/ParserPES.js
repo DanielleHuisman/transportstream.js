@@ -1,6 +1,6 @@
 import {ParseError} from '../errors';
 import {PacketPES} from '../packets';
-import {toHex} from '../util';
+import {toHex, toHexByte} from '../util';
 import Parser from './Parser';
 
 export const streamsWithoutHeader = [
@@ -15,12 +15,16 @@ export const streamsWithoutHeader = [
 ];
 
 // PTS/DTS are 33 bits therefore we can't use bitwise operators in JavaScript as bitwise operators treat their operands as a sequence of 32 bits
-const parseTimestamp = (data, start) =>
-    (data[start] & 0x0e) * (1 << 29) +
+const parseTimestamp = (data, start) => {
+    // TODO: fix this function
+    // console.log('PTS', Array.from(data.slice(start, start + 5)).map((d) => toHexByte(d)));
+
+    return (data[start] & 0x0e) * (1 << 29) +
     data[start + 1] * (1 << 22) +
     (data[start + 2] & 0xfe) * (1 << 14) +
     data[start + 3] * (1 << 7) +
     (data[start + 4] >> 1);
+};
 
 export default class ParserPES extends Parser {
     constructor() {
@@ -32,34 +36,34 @@ export default class ParserPES extends Parser {
         const packet = new PacketPES(data);
 
         // Validate PES prefix
-        const pesPrefix = data[0] << 8 | data[1];
-        if (pesPrefix !== 0x0001) {
+        const pesPrefix = data[0] << 8 | data[1] << 8 | data[2];
+        if (pesPrefix !== 0x000001) {
             throw new ParseError(this, `Invalid PES prefix (${toHex(pesPrefix, 6)}), should be 0x000001`);
         }
 
         // Parse PES header
-        packet.streamId = data[2];
-        packet.payloadLength = data[3] << 8 | data[4];
+        packet.streamId = data[3];
+        packet.payloadLength = data[4] << 8 | data[5];
 
         // Define packet payload start
-        let start = 5;
+        let start = 6;
 
         // Parse PES header
         if (streamsWithoutHeader.indexOf(packet.streamId) === -1) {
-            packet.scramblingControl = (data[5] & 0x30) >> 4;
-            packet.isPriority = (data[5] & 0x08) !== 0;
-            packet.hasDataAlignment = (data[5] & 0x04) !== 0;
-            packet.hasCopyright = (data[5] & 0x02) !== 0;
-            packet.isOriginal = (data[5] & 0x01) !== 0;
-            packet.hasPTS = (data[6] & 0x80) !== 0;
-            packet.hasDTS = (data[6] & 0x40) !== 0;
-            packet.hasESCR = (data[6] & 0x20) !== 0;
-            packet.hasESRate = (data[6] & 0x10) !== 0;
-            packet.hasDSMTrickMode = (data[6] & 0x08) !== 0;
-            packet.hasAddinitionalCopyInfo = (data[6] & 0x04) !== 0;
-            packet.hasCRC = (data[6] & 0x02) !== 0;
-            packet.hasExtension = (data[6] & 0x01) !== 0;
-            packet.headerLength = data[7];
+            packet.scramblingControl = (data[start] & 0x30) >> 4;
+            packet.isPriority = (data[start] & 0x08) !== 0;
+            packet.hasDataAlignment = (data[start] & 0x04) !== 0;
+            packet.hasCopyright = (data[start] & 0x02) !== 0;
+            packet.isOriginal = (data[start] & 0x01) !== 0;
+            packet.hasPTS = (data[start + 1] & 0x80) !== 0;
+            packet.hasDTS = (data[start + 1] & 0x40) !== 0;
+            packet.hasESCR = (data[start + 1] & 0x20) !== 0;
+            packet.hasESRate = (data[start + 1] & 0x10) !== 0;
+            packet.hasDSMTrickMode = (data[start + 1] & 0x08) !== 0;
+            packet.hasAddinitionalCopyInfo = (data[start + 1] & 0x04) !== 0;
+            packet.hasCRC = (data[start + 1] & 0x02) !== 0;
+            packet.hasExtension = (data[start + 1] & 0x01) !== 0;
+            packet.headerLength = data[start + 2];
             start += 3;
 
             // Parse presentation timestamp
@@ -162,10 +166,10 @@ export default class ParserPES extends Parser {
                     start += packet.extension2Length;
                 }
             }
-        }
 
-        // Skip any remaining stuffing bytes
-        start = 8 + packet.headerLength;
+            // Skip any remaining stuffing bytes
+            start = 9 + packet.headerLength;
+        }
 
         // Parse payload
         packet.payload = data.slice(start, packet.payloadLength === 0 ? data.length : start + packet.payloadLength);

@@ -31,13 +31,17 @@ export default class ParserPSI extends Parser {
         // Initialize packet
         const packet = new PacketPSI(data);
 
-        // Parse table header
-        packet.tableId = data[0];
-        packet.hasSyntaxSection = (data[1] & 0x80) !== 0;
-        packet.privateBit = (data[1] & 0x40) !== 0;
-        packet.sectionLength = (data[1] & 0x03) << 8 | data[2];
+        // Parse packet pointer
+        let start = 1 + data[0];
 
-        packet.tableData = data.slice(3, 3 + packet.sectionLength);
+        // Parse table header
+        packet.tableId = data[start];
+        packet.hasSyntaxSection = (data[start + 1] & 0x80) !== 0;
+        packet.privateBit = (data[start + 1] & 0x40) !== 0;
+        packet.sectionLength = (data[start + 1] & 0x03) << 8 | data[start + 2];
+        start += 3;
+
+        packet.tableData = data.slice(start, start + packet.sectionLength);
 
         // Parse syntax section
         if (packet.hasSyntaxSection) {

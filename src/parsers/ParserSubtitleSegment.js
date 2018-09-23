@@ -81,8 +81,6 @@ const segments = {
             data.topField = [];
             data.bottomField = [];
 
-            console.log('top', data.topFieldLength, 'bottom', data.bottomFieldLength);
-
             const parsePixelData = (i) => {
                 const pixelData = {
                     type: stream.read(8)
@@ -90,8 +88,6 @@ const segments = {
                 let si = 1;
 
                 if (pixelData.type === 0x10) {
-                    console.log('2 bit code');
-
                     pixelData.code2bit = [];
                     let end = false;
                     let bits = 0;
@@ -155,11 +151,7 @@ const segments = {
 
                     stream.advance(bits % 8);
                     si += Math.ceil(bits / 8);
-
-                    console.log('MAGIC 2-BIT CODE', pixelData.code2bit);
                 } else if (pixelData.type === 0x11) {
-                    console.log('4 bit code', stream.available(4));
-
                     pixelData.code4bit = [];
                     let end = false;
                     let bits = 0;
@@ -228,16 +220,9 @@ const segments = {
                         }
                     }
 
-                    console.log('read', bits, 'bits.', bits % 8, 'bits needed to align', 'read', Math.ceil(bits / 8), 'bytes');
-                    console.log('stream offset', stream.offset(), 'bit offest', stream.bitPosition);
                     stream.advance(bits % 8);
                     si += Math.ceil(bits / 8);
-                    console.log('stream offset', stream.offset(), 'bit offest', stream.bitPosition);
-
-                    console.log('MAGIC 4-BIT CODE', pixelData.code4bit);
                 } else if (pixelData.type === 0x12) {
-                    console.log('8 bit code');
-
                     pixelData.code8bit = [];
                     let end = false;
                     let bits = 0;
@@ -271,8 +256,6 @@ const segments = {
 
                     stream.advance(bits % 8);
                     si += Math.ceil(bits / 8);
-
-                    console.log('MAGIC 8-BIT CODE', pixelData.code8bit);
                 } else if (pixelData.type === 0x20) {
                     pixelData.table2to4 = {};
                     for (let j = 0; j < 2; j++) {
@@ -280,28 +263,22 @@ const segments = {
                         pixelData.table2to4[j + 1] = stream.read(4);
                     }
                     si += 16;
-
-                    console.log('TABLE 2-to-4', pixelData.table2to4);
                 } else if (pixelData.type === 0x21) {
                     pixelData.table2to8 = {};
                     for (let j = 0; j < 4; j++) {
                         pixelData.table2to8[j] = stream.read(8);
                     }
                     si += 32;
-
-                    console.log('TABLE 2-to-8', pixelData.table2to8);
                 } else if (pixelData.type === 0x22) {
                     pixelData.table4to8 = {};
                     for (let j = 0; j < 16; j++) {
                         pixelData.table4to8[j] = stream.read(8);
                     }
                     si += 128;
-
-                    console.log('TABLE 4-to-8', pixelData.table4to8);
                 } else if (pixelData.type === 0xF0) {
-                    console.log('end of object line code');
+                    // End of object line
                 } else {
-                    console.log('UNKNOWN PIXEL DATA TYPE', toHexByte(pixelData.type));
+                    console.warn(`Unknown pixel data type (${toHexByte(pixelData.type)})`);
                 }
 
                 pixelData.length = si;
@@ -311,10 +288,6 @@ const segments = {
 
             let subindex = 0;
             let line = [];
-
-            console.group();
-            console.log('TOP FIELD', data.topFieldLength, subindex);
-
             while (subindex < data.topFieldLength) {
                 const pixelData = parsePixelData(subindex);
                 if (pixelData.type === 0xF0) {
@@ -325,21 +298,11 @@ const segments = {
                 }
 
                 subindex += pixelData.length;
-                console.log('subindex', subindex, 'left', data.topFieldLength - subindex);
             }
-            console.log(data.topField);
-            console.groupEnd();
-
 
             subindex = 0;
             line = [];
-
-            console.group();
-            console.log('BOTTOM FIELD', data.bottomFieldLength, subindex);
-
             while (subindex < data.bottomFieldLength) {
-                console.log(toHexByte(stream.peek(8)));
-                // break;
                 const pixelData = parsePixelData(subindex);
                 if (pixelData.type === 0xF0) {
                     data.bottomField.push(line);
@@ -349,19 +312,11 @@ const segments = {
                 }
 
                 subindex += pixelData.length;
-                console.log('subindex', subindex, 'left', data.bottomFieldLength - subindex);
-                if (data.bottomFieldLength - subindex < 0) {
-                    break;
-                }
             }
-            console.log(data.bottomField);
-            console.groupEnd();
 
             const stuffingLength = desc.length - 7 - data.topFieldLength - data.bottomFieldLength;
             if (stuffingLength === 1) {
                 stream.advance(8);
-            } else if (stuffingLength > 1) {
-                console.error('STUFFING LENGTH > 1');
             }
         } else if (data.codingMethod === 1) {
             data.length = stream.read(8);

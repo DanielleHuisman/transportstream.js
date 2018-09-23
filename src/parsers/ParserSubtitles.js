@@ -1,7 +1,6 @@
 import {BufferList, Buffer, Stream, Bitstream} from 'av';
 
 import {PacketSubtitles, SubtitleSegment} from '../packets';
-import {toHexByte} from '../util';
 import Parser from './Parser';
 import ParserSubtitleSegment from './ParserSubtitleSegment';
 
@@ -16,9 +15,6 @@ export const parseSubtitleSegment = (stream) => {
     segment.type = stream.read(8);
     segment.pageId = stream.read(16);
     segment.length = stream.read(16);
-
-    // Parse segment data
-    // segment.data = data.slice(index + 6, index + 6 + segment.length);
 
     // Parse segment specific data
     parserSegment.parse(segment, stream);
@@ -35,6 +31,7 @@ export default class ParserSubtitles extends Parser {
         // Initialize packet
         const packet = new PacketSubtitles();
 
+        // Initialize bitstream
         const bufferList = new BufferList();
         const buffer = new Buffer(new Uint8Array(data));
         bufferList.append(buffer);
@@ -46,19 +43,15 @@ export default class ParserSubtitles extends Parser {
         packet.streamId = bitStream.read(8);
 
         // Loop over all subtitle segments
-        while (bitStream.read(8) === 0x0f && stream.remainingBytes() > 0) {
+        while (bitStream.read(8) === 0x0f) {
             // Parse subtitle segment
             const segment = parseSubtitleSegment(bitStream);
             packet.segments.push(segment);
+        }
 
-            console.log('subtitle bytes left', stream.remainingBytes(), 'first byte', toHexByte(bitStream.peek(8)));
-
-            if (bitStream.peek(8) !== 0x0f) {
-                bitStream.rewind(1);
-                const b = bitStream.read(8);
-
-                console.error('ERRORERETET', 'prev', toHexByte(b));
-            }
+        // Check if the packet has data remaining, the last byte is always 0xFF
+        if (stream.remainingBytes() > 1) {
+            console.warn(`Subtitles packet has ${stream.remainingBytes() - 1} bytes left, but the first byte is not 0x0F.`);
         }
 
         return packet;
