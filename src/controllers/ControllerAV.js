@@ -99,11 +99,14 @@ export default class ControllerAV extends Controller {
                     // this.emit('audio', packetPES.payload.buffer);
                     break;
                 }
-                case 'MPEG2-3': {
+                case 'MPEG-2 Part 3': {
                     // TODO
+
+                    this.emit('audio', packetPES.payload.buffer);
+
                     break;
                 }
-                case 'MPEG1-3': {
+                case 'MPEG-1 Part 3': {
                     // TODO
                     break;
                 }
