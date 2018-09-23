@@ -57,6 +57,11 @@ const descriptors = {
         avcStillPresent: (data[5] & 0x80) !== 0,
         avc24HourPictureFlag: (data[5] & 0x40) !== 0
     }),
+    CA_descriptor: (desc, data) => ({
+        systemId: data[0] << 8 | data[1],
+        pid: (data[2] & 0x1f) << 8 | data[3],
+        privateData: data.slice(3)
+    }),
     cable_delivery_system_descriptor: (desc, data) => ({
         frequency: data[0] << 24 | data[1] << 16 | data[2] << 8 | data[3],
         outerFEC: data[5] & 0x0f,
