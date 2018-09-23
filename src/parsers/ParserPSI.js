@@ -38,7 +38,7 @@ export default class ParserPSI extends Parser {
         packet.tableId = data[start];
         packet.hasSyntaxSection = (data[start + 1] & 0x80) !== 0;
         packet.privateBit = (data[start + 1] & 0x40) !== 0;
-        packet.sectionLength = (data[start + 1] & 0x03) << 8 | data[start + 2];
+        packet.sectionLength = (data[start + 1] & 0x0f) << 8 | data[start + 2];
         start += 3;
 
         packet.tableData = data.slice(start, start + packet.sectionLength);
