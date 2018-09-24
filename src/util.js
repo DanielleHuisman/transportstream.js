@@ -22,11 +22,11 @@ export const toHexByte = (byte) => {
 export const stringifyDvb = (data) => {
     if (data[0] == 0xE0 && data[1] >= 0x80 && data[1] <= 0x9F) {
         // TODO: two byte control codes
-        console.warn('Unsupported control code');
+        // console.warn('Unsupported control code', toHexByte(data[0]), toHexByte(data[1]));
         data = data.slice(2);
     } else if (data[0] >= 0x80 && data[0] <= 0x9F) {
         // TODO: one byte control codes
-        console.warn('Unsupported control code');
+        // console.warn('Unsupported control code', toHexByte(data[0]));
         data = data.slice(1);
     }
 
@@ -39,7 +39,7 @@ export const stringifyDvb = (data) => {
         }
 
         // TODO: other encodings (0x11 - 0x15)
-        console.warn(`Unsupported encoding ${toHexByte(encoding)}`);
+        console.warn('Unsupported encoding', toHexByte(encoding));
         data = data.slice(1);
     }
 

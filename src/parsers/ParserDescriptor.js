@@ -110,6 +110,10 @@ const descriptors = {
         availaiityFlag: d[0] & 0x80 !== 0,
         countryCodes: split(d, 1, 3, (data, i) => iconv.decode(data.slice(i, i + 3)), 'ISO-8859-1')
     }),
+    data_broadcast_id_descriptor: (desc, data) => ({
+        dataBroadcastId: data[0] << 8 | data[1],
+        idSelectorBytes: data.slice(2)
+    }),
     enhanced_AC3_descriptor: (desc, data) => {
         const result = {
             hasComponentType: (data[0] & 0x80) !== 0,
@@ -266,6 +270,11 @@ const descriptors = {
     maximum_bitrate_descriptor: (desc, data) => ({
         maximumBitrate: (data[0] & 0x30) << 16 | data[1] << 8 | data[2]
     }),
+    multiplex_buffer_utilization_descriptor: (desc, data) => ({
+        isBoundValid: (data[0] & 0x80) !== 0,
+        offsetLowerBound: (data[0] & 0x7f) << 8 | data[1],
+        offsetUpperBound: (data[2] & 0x7f) << 8 | data[3]
+    }),
     network_name_descriptor: (desc, data) => ({
         raw: data,
         name: stringifyDvb(data)
@@ -286,6 +295,7 @@ const descriptors = {
         formatIdentifier: d[0] << 24 | d[1] << 16 | d[2] << 8 | d[3],
         additionalIdentification: d.slice(3)
     }),
+    related_content_descriptor: () => ({}),
     service_descriptor: (desc, data) => ({
         type: data[0],
         provider: stringifyDvb(data.slice(2, 2 + data[1])),

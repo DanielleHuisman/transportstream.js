@@ -52,6 +52,7 @@ export default class SubtitleRenderer extends Renderer {
         this.context.textBaseline = 'middle';
         this.context.fillText(Math.floor(++this.updates / 60).toString(), this.player.width / 2, this.player.height / 2);
 
+        let display = null;
         const regions = {};
         const cluts = {};
         const objects = {};
@@ -77,12 +78,22 @@ export default class SubtitleRenderer extends Renderer {
                     cluts[segment.parsedData.id] = segment.parsedData.entries;
                 } else if (segment.type === 0x13) {
                     objects[segment.parsedData.id] = segment.parsedData;
+                } else if (segment.type === 0x14) {
+                    display = segment.parsedData;
                 }
             }
         }
 
+        if (display) {
+            // this.context.fillStyle = '#FF00FF';
+            // this.context.fillRect(
+            //     Math.max(0, this.player.width - display.width) / 2, Math.max(0, this.player.height - display.height) / 2,
+            //     display.width, display.height
+            // );
+        }
+
         for (const region of Object.values(regions)) {
-            const offsetX = region.horizontalAddress + (this.player.width - region.width) / 2;
+            const offsetX = region.horizontalAddress + Math.max(0, this.player.width - region.width) / 2;
             const offsetY = region.verticalAddress;
 
             this.context.fillStyle = COLORS[region.id];
@@ -103,12 +114,18 @@ export default class SubtitleRenderer extends Renderer {
                             for (let i = 0; i < object2.topField[j][0].code4bit.length; i++) {
                                 const value = object2.topField[j][0].code4bit[i];
                                 const x = i + object1.horizontalPosition;
-                                const y = j + object1.verticalPosition;
+                                const y = j * 2 + object1.verticalPosition;
 
                                 if (value !== 0) {
-                                    const index = (x + y * region.width) * 4;
                                     const [r, g, b] = yuvToRgb(clut[value]);
 
+                                    let index = (x + y * region.width) * 4;
+                                    image.data[index] = r;
+                                    image.data[index + 1] = g;
+                                    image.data[index + 2] = b;
+                                    image.data[index + 3] = 255;
+
+                                    index = (x + (y + 1) * region.width) * 4;
                                     image.data[index] = r;
                                     image.data[index + 1] = g;
                                     image.data[index + 2] = b;
@@ -121,12 +138,18 @@ export default class SubtitleRenderer extends Renderer {
                             for (let i = 0; i < object2.bottomField[j][0].code4bit.length; i++) {
                                 const value = object2.topField[j][0].code4bit[i];
                                 const x = i + object1.horizontalPosition;
-                                const y = 1 + j + object1.verticalPosition;
+                                const y = j * 2 + object1.verticalPosition;
 
                                 if (value !== 0) {
-                                    const index = (x + y * region.width) * 4;
                                     const [r, g, b] = yuvToRgb(clut[value]);
 
+                                    let index = (x + y * region.width) * 4;
+                                    image.data[index] = r;
+                                    image.data[index + 1] = g;
+                                    image.data[index + 2] = b;
+                                    image.data[index + 3] = 255;
+
+                                    index = (x + (y + 1) * region.width) * 4;
                                     image.data[index] = r;
                                     image.data[index + 1] = g;
                                     image.data[index + 2] = b;

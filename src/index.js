@@ -17,7 +17,7 @@ const controllerInformation = new ControllerInformation(controllerTS);
 
 // Initialize player
 const player = new Player(document.getElementById('player'), 720, 576);
-player.resize(1280, 720);
+player.resize(1920, 1080);
 
 // Register event handlers
 controllerTS.on('pid', (pid) => {
@@ -42,7 +42,7 @@ controllerStream.on('streams-updated', (streams, updates) => {
     console.log('switched streams', updates, streams);
 
     if (updates.indexOf('audio') !== -1) {
-        controllerAV.setAudioStream(streams.audio);
+        // controllerAV.setAudioStream(streams.audio);
     }
     if (updates.indexOf('video') !== -1) {
         // controllerAV.setVideoStream(streams.video);

@@ -50,8 +50,8 @@ const segments = {
         data.versionNumber = stream.read(4);
         data.hasDisplayWindow = stream.read(1) !== 0;
         stream.advance(3);
-        data.displayWidth = stream.read(16);
-        data.displayHeight = stream.read(16);
+        data.width = stream.read(16);
+        data.height = stream.read(16);
 
         if (data.hasDisplayWindow) {
             data.windowHorizontalMin = stream.read(16);
