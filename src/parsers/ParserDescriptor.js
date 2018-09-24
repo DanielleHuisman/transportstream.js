@@ -333,7 +333,24 @@ const descriptors = {
         type: (data[i + 3] & 0xf8) >> 3,
         magazineNumber: data[i + 3] & 0x07,
         pageNumber: data[i + 4]
-    }))
+    })),
+    video_stream_descriptor: (desc, data) => {
+        const finalData = {
+            hasMultipleFrameRate: (data[0] & 0x80) !== 0,
+            frameRateCode: (data[0] &0x78) >> 3,
+            isMPEG1Only: (data[0] & 0x04) !== 0,
+            hasContrainedParameter: (data[0] & 0x02) !== 0,
+            isStillPicture: (data[0] & 0x01) !== 0
+        };
+
+        if (!finalData.isMPEG1Only) {
+            finalData.profileAndLevelIndication = data[1];
+            finalData.chromaFormat = (data[2] & 0xc0) >> 6;
+            finalData.hasFrameRateExtension = (data[2] & 0x20) !== 0;
+        }
+
+        return finalData;
+    }
 };
 
 export default class ParserDescriptor extends Parser {
