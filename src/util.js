@@ -1,9 +1,13 @@
 import iconv from 'iconv-lite';
 
-export const mergeUint8Arrays = (array1, array2) => {
-    const buffer = new Uint8Array(array1.length + array2.length);
-    buffer.set(array1, 0);
-    buffer.set(array2, array1.length);
+export const mergeUint8Arrays = (arrays) => {
+    const length = arrays.reduce((final, array) => final + array.length, 0);
+    const buffer = new Uint8Array(length);
+    let index = 0;
+    for (const array of arrays) {
+        buffer.set(array, index);
+        index += array.length;
+    }
     return buffer;
 };
 

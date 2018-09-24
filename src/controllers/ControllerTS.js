@@ -59,7 +59,7 @@ export default class ControllerTS extends Controller {
 
                     // Create the PID buffer and stream if they don't already exist
                     if (!this._pidStreams[packetTS.pid]) {
-                        this._pidBuffers[packetTS.pid] = new Uint8Array();
+                        this._pidBuffers[packetTS.pid] = [];
                         this._pidStreams[packetTS.pid] = through.obj();
 
                         // Emit event
@@ -71,7 +71,7 @@ export default class ControllerTS extends Controller {
                         // Check if the PID stream is enabled (prevents unnecesarry parsing)
                         if (this.isStreamEnabled(packetTS.pid)) {
                             // Parse the packet
-                            const packet = this.parsePacket(packetTS.pid, this._pidBuffers[packetTS.pid]);
+                            const packet = this.parsePacket(packetTS.pid, mergeUint8Arrays(this._pidBuffers[packetTS.pid]));
 
                             // Handle certain packets ourselves before passing them on
                             if (packet instanceof PacketPAT) {
@@ -83,14 +83,14 @@ export default class ControllerTS extends Controller {
                         }
 
                         // Clear the PID buffer
-                        this._pidBuffers[packetTS.pid] = new Uint8Array();
+                        this._pidBuffers[packetTS.pid] = [];
                     }
 
                     // TODO: check packet continuity counter
 
                     // Append the packet payload to the PID buffer
                     if (packetTS.payload) {
-                        this._pidBuffers[packetTS.pid] = mergeUint8Arrays(this._pidBuffers[packetTS.pid], packetTS.payload);
+                        this._pidBuffers[packetTS.pid].push(packetTS.payload);
                     }
 
                     // End stream after a few packets
