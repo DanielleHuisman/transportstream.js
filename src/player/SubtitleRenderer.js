@@ -119,13 +119,7 @@ export default class SubtitleRenderer extends Renderer {
                                 if (value !== 0) {
                                     const [r, g, b] = yuvToRgb(clut[value]);
 
-                                    let index = (x + y * region.width) * 4;
-                                    image.data[index] = r;
-                                    image.data[index + 1] = g;
-                                    image.data[index + 2] = b;
-                                    image.data[index + 3] = 255;
-
-                                    index = (x + (y + 1) * region.width) * 4;
+                                    const index = (x + y * region.width) * 4;
                                     image.data[index] = r;
                                     image.data[index + 1] = g;
                                     image.data[index + 2] = b;
@@ -138,18 +132,12 @@ export default class SubtitleRenderer extends Renderer {
                             for (let i = 0; i < object2.bottomField[j][0].code4bit.length; i++) {
                                 const value = object2.topField[j][0].code4bit[i];
                                 const x = i + object1.horizontalPosition;
-                                const y = j * 2 + object1.verticalPosition;
+                                const y = 1 + j * 2 + object1.verticalPosition;
 
                                 if (value !== 0) {
                                     const [r, g, b] = yuvToRgb(clut[value]);
 
-                                    let index = (x + y * region.width) * 4;
-                                    image.data[index] = r;
-                                    image.data[index + 1] = g;
-                                    image.data[index + 2] = b;
-                                    image.data[index + 3] = 255;
-
-                                    index = (x + (y + 1) * region.width) * 4;
+                                    const index = (x + y * region.width) * 4;
                                     image.data[index] = r;
                                     image.data[index + 1] = g;
                                     image.data[index + 2] = b;
