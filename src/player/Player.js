@@ -1,4 +1,6 @@
-import SubtitleRenderer from './SubtitleRenderer';
+import Video from './Video';
+import Audio from './Audio';
+import Subtitles from './Subtitles';
 
 export default class Player {
     constructor(mount, width, height) {
@@ -44,7 +46,11 @@ export default class Player {
         // Render loading text
         this.renderLoading();
 
-        this.renderers.push(new SubtitleRenderer(this));
+        this.video = new Video(this);
+        this.audio = new Audio(this);
+        this.subtitles = new Subtitles(this);
+
+        this.renderers.push(this.subtitles);
     }
 
     resize(width, height) {

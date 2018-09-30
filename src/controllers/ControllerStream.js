@@ -108,7 +108,8 @@ export default class ControllerStream extends Controller {
                     }
                     case 'audio': {
                         // Generally speaking better video sources have a higher stream type (fine for now)
-                        score = stream.type === 6 ? 0 : stream.type; // TODO: remove skipping of AC3 track
+                        // score = stream.type === 6 ? 0 : stream.type; // TODO: remove skipping of AC3 track
+                        score = stream.type;
 
                         for (const descriptor of stream.descriptors) {
                             if (descriptor.name === 'ISO_639_language_descriptor') {

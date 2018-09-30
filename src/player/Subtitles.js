@@ -14,7 +14,7 @@ const yuvToRgb = (color) => {
     return [r, g, b];
 };
 
-export default class SubtitleRenderer extends Renderer {
+export default class Subtitles extends Renderer {
     updates = 0;
     queue = [];
     current = null;
@@ -25,7 +25,7 @@ export default class SubtitleRenderer extends Renderer {
                 setTimeout(() => {
                     if (this.queue.length > 0) {
                         const p = this.queue.pop();
-                        console.log(p);
+                        // console.log(p);
                         this.current = p;
                         this.handleTimeout();
                     } else {

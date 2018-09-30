@@ -17,7 +17,7 @@ const controllerInformation = new ControllerInformation(controllerTS);
 
 // Initialize player
 const player = new Player(document.getElementById('player'), 720, 576);
-player.resize(1920, 1080);
+// player.resize(1920, 1080);
 
 // Register event handlers
 controllerTS.on('pid', (pid) => {
@@ -42,7 +42,7 @@ controllerStream.on('streams-updated', (streams, updates) => {
     console.log('switched streams', updates, streams);
 
     if (updates.indexOf('audio') !== -1) {
-        // controllerAV.setAudioStream(streams.audio);
+        controllerAV.setAudioStream(streams.audio);
     }
     if (updates.indexOf('video') !== -1) {
         // controllerAV.setVideoStream(streams.video);
@@ -73,6 +73,10 @@ controllerInformation.on('time-date', (packet) => {
 });
 controllerInformation.on('time-offset', (packet) => {
     console.log('[TOT]', packet.utc, 'offset:', packet.descriptors[0] ? packet.descriptors[0].parsedData[0].offset : undefined);
+});
+
+controllerAV.on('audio', (packet) => {
+    player.audio.onPacket(packet);
 });
 
 const pages = {};
@@ -131,7 +135,7 @@ document.getElementById('test-clut-body').appendChild(tr1);
 controllerSubtitles.on('subtitles', (packet) => {
     // console.log(packet);
 
-    player.renderers[0].onPacket(packet);
+    player.subtitles.onPacket(packet);
 
     for (const segment of packet.segments) {
         if (!pages[segment.pageId]) {
@@ -183,47 +187,47 @@ controllerSubtitles.on('subtitles', (packet) => {
     }
 });
 
-// Create media source
-const buffers = [];
-let isLoading = false;
-let sourceBuffer = false;
-const mediaSource = new MediaSource();
-mediaSource.addEventListener('error', console.error);
-mediaSource.addEventListener('sourceopen', () => {
-    sourceBuffer = mediaSource.addSourceBuffer('audio/mpeg');
-    sourceBuffer.addEventListener('updateend', () => {
-        if (buffers.length > 0) {
-            console.log('appending', buffers[0].byteLength);
-            sourceBuffer.appendBuffer(buffers.shift());
-            isLoading = true;
-        } else {
-            isLoading = false;
-        }
-    });
-});
-
-// Create audio tag
-const audio = document.createElement('audio');
-audio.src = URL.createObjectURL(mediaSource);
-document.body.append(audio);
-
-console.log('IS MP3 SUPPORTED:', MediaSource.isTypeSupported('audio/mpeg'));
-
-controllerAV.on('audio', (buffer) => {
-    if (isLoading || !sourceBuffer) {
-        buffers.push(buffer);
-    } else {
-        console.log('appending', buffer.byteLength);
-        sourceBuffer.appendBuffer(buffer);
-        isLoading = true;
-    }
-});
-
-setTimeout(() => {
-    mediaSource.endOfStream();
-    console.log('PLAYING', mediaSource);
-    audio.play();
-}, 1000 * 20);
+// // Create media source
+// const buffers = [];
+// let isLoading = false;
+// let sourceBuffer = false;
+// const mediaSource = new MediaSource();
+// mediaSource.addEventListener('error', console.error);
+// mediaSource.addEventListener('sourceopen', () => {
+//     sourceBuffer = mediaSource.addSourceBuffer('audio/mpeg');
+//     sourceBuffer.addEventListener('updateend', () => {
+//         if (buffers.length > 0) {
+//             console.log('appending', buffers[0].byteLength);
+//             sourceBuffer.appendBuffer(buffers.shift());
+//             isLoading = true;
+//         } else {
+//             isLoading = false;
+//         }
+//     });
+// });
+//
+// // Create audio tag
+// const audio = document.createElement('audio');
+// audio.src = URL.createObjectURL(mediaSource);
+// document.body.append(audio);
+//
+// console.log('IS MP3 SUPPORTED:', MediaSource.isTypeSupported('audio/mpeg'));
+//
+// controllerAV.on('audio', (buffer) => {
+//     if (isLoading || !sourceBuffer) {
+//         buffers.push(buffer);
+//     } else {
+//         console.log('appending', buffer.byteLength);
+//         sourceBuffer.appendBuffer(buffer);
+//         isLoading = true;
+//     }
+// });
+//
+// setTimeout(() => {
+//     mediaSource.endOfStream();
+//     console.log('PLAYING', mediaSource);
+//     audio.play();
+// }, 1000 * 20);
 
 // Start the controllers
 controllerTS.start();

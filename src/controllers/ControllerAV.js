@@ -86,17 +86,18 @@ export default class ControllerAV extends Controller {
 
                     // console.log('audio', packetPES);
 
-                    const data = packetPES.payload;
-                    let offset;
-                    for (offset = 0; offset < data.length - 1; offset++) {
-                        if ((data[offset] === 0xff) && ((data[offset + 1] & 0xf0) === 0xf0)) {
-                            break;
-                        }
-                    }
+                    // const data = packetPES.payload;
+                    // let offset;
+                    // for (offset = 0; offset < data.length - 1; offset++) {
+                    //     if ((data[offset] === 0xff) && ((data[offset + 1] & 0xf0) === 0xf0)) {
+                    //         break;
+                    //     }
+                    // }
 
                     // console.log('start', offset);
 
-                    // this.emit('audio', packetPES.payload.buffer);
+                    this.emit('audio', packetPES);
+
                     break;
                 }
                 case 'MPEG-2 Part 3': {
@@ -108,6 +109,9 @@ export default class ControllerAV extends Controller {
                 }
                 case 'MPEG-1 Part 3': {
                     // TODO
+
+                    this.emit('audio', packetPES.payload.buffer);
+
                     break;
                 }
             }

@@ -19,6 +19,7 @@
     "serve-example": "http-server example -p 3001 -c-1"
   },
   "dependencies": {
+    "ac3.js": "^0.2.2",
     "av": "^0.4.9",
     "crc-32": "^1.2.0",
     "hyperquest": "^2.1.3",
