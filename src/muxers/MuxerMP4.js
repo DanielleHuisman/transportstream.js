@@ -103,6 +103,89 @@ export default class MuxerMP4 extends Muxer {
         return this.box('mdia', children);
     }
 
+    mdhd({creationTime, modificationTime, timescale, duration, language}) {
+        const char1 = (language.charCodeAt(0) - 0x60) & 0x1f;
+        const char2 = (language.charCodeAt(1) - 0x60) & 0x1f;
+        const char3 = (language.charCodeAt(2) - 0x60) & 0x1f;
+
+        return this.fullBox('mdhd', 0, 0, [new Uint8Array([
+            creationTime >> 24, creationTime >> 16, creationTime >> 8, creationTime & 0xff,
+            modificationTime >> 24, modificationTime >> 16, modificationTime >> 8, modificationTime & 0xff,
+            timescale >> 24, timescale >> 16, timescale >> 8, timescale & 0xff,
+            duration >> 24, duration >> 16, duration >> 8, duration & 0xff,
+            (char1 << 2) | (char2 & 0x18), ((char2 & 0x07) << 5) | char3,
+            0, 0 // predefined
+        ])]);
+    }
+
+    hdlr({handlerType, name}) {
+        return this.fullBox('hdlr', 0, 0, [
+            new Uint8Array([
+                0, 0, 0, 0, // predefined
+                handlerType >> 24, handlerType >> 16, handlerType >> 8, handlerType & 0xff
+            ]),
+            new Uint8Array(Buffer.from(name, 'utf8'))
+        ]);
+    }
+
+    minf(children) {
+        return this.box('minf', children);
+    }
+
+    vmhd({graphicsMode = 0, opcolor = [0, 0, 0]} = {}) {
+        return this.fullBox('vmhd', 0, 1, [new Uint8Array([
+            graphicsMode >> 8, graphicsMode & 0xff,
+            opcolor[0] >> 8, opcolor[0] & 0xff,
+            opcolor[1] >> 8, opcolor[1] & 0xff,
+            opcolor[2] >> 8, opcolor[2] & 0xff,
+        ])]);
+    }
+
+    smhd({balance = 0} = {}) {
+        return this.fullBox('smhd', 0, 0, [new Uint8Array([
+            balance >> 8, balance & 0xff,
+            0, 0 // reserved
+        ])]);
+    }
+
+    hmhd({maxPDUSize, avgPDUSize, maxBitrate, avgBitrate}) {
+        return this.fullBox('hmhd', 0, 0, [new Uint8Array([
+            maxPDUSize >> 8, maxPDUSize & 0xff,
+            avgPDUSize >> 8, avgPDUSize & 0xff,
+            maxBitrate >> 24, maxBitrate >> 16, maxBitrate >> 8, maxBitrate & 0xff,
+            avgBitrate >> 24, avgBitrate >> 16, avgBitrate >> 8, avgBitrate & 0xff,
+            0, 0, 0, 0 // reserved
+        ])]);
+    }
+
+    nmhd() {
+        return this.fullBox('nmhd', 0, 0, []);
+    }
+
+    dinf(children) {
+        return this.box('dinf', children);
+    }
+
+    dref(entries = []) {
+        return this.fullBox('dref ', 0, 0, [
+            new Uint8Array([entries.length]),
+            ...entries
+        ]);
+    }
+
+    url({location}, flags = 0) {
+        return this.fullBox('url ', 0, flags, [
+            new Uint8Array(Buffer.from(location, 'utf8'))
+        ]);
+    }
+
+    urn({name, location}, flags = 0) {
+        return this.fullBox('urn ', 0, flags, [
+            new Uint8Array(Buffer.from(name, 'utf8')),
+            new Uint8Array(Buffer.from(location, 'utf8'))
+        ]);
+    }
+
     // TODO
 
     mdat(data) {
