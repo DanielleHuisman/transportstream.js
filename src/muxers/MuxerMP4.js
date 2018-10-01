@@ -170,7 +170,7 @@ export default class MuxerMP4 extends Muxer {
 
     dref(entries = []) {
         return this.fullBox('dref ', 0, 0, [
-            new Uint8Array([entries.length]),
+            new Uint8Array([entries.length >> 24, entries.length >> 16, entries.length >> 8, entries.length & 0xff]),
             ...entries
         ]);
     }
@@ -188,7 +188,31 @@ export default class MuxerMP4 extends Muxer {
         ]);
     }
 
-    // TODO: sample table box
+    stbl(children) {
+        return this.box('stbl', children);
+    }
+
+    stts(entries) {
+        return this.fullBox('stts', 0, 0, [
+            new Uint8Array([entries.length >> 24, entries.length >> 16, entries.length >> 8, entries.length & 0xff]),
+            ...entries.map(({sampleCount, sampleDelta}) => new Uint8Array([
+                sampleCount >> 24, sampleCount >> 16, sampleCount >> 8, sampleCount & 0xff,
+                sampleDelta >> 24, sampleDelta >> 16, sampleDelta >> 8, sampleDelta & 0xff
+            ]))
+        ]);
+    }
+
+    ctts(entries) {
+        return this.fullBox('ctts', 0, 0, [
+            new Uint8Array([entries.length >> 24, entries.length >> 16, entries.length >> 8, entries.length & 0xff]),
+            ...entries.map(({sampleCount, sampleOffset}) => new Uint8Array([
+                sampleCount >> 24, sampleCount >> 16, sampleCount >> 8, sampleCount & 0xff,
+                sampleOffset >> 24, sampleOffset >> 16, sampleOffset >> 8, sampleOffset & 0xff
+            ]))
+        ]);
+    }
+    // TODO: rest of sample table box
+
     // TODO: movie extends box
     // TODO: IPMP control box
 
