@@ -99,6 +99,8 @@ export default class MuxerMP4 extends Muxer {
         ));
     }
 
+    // TODO: edit list container
+
     mdia(children) {
         return this.box('mdia', children);
     }
@@ -186,9 +188,66 @@ export default class MuxerMP4 extends Muxer {
         ]);
     }
 
-    // TODO
+    // TODO: sample table box
+    // TODO: movie extends box
+    // TODO: IPMP control box
+
+    moof(children) {
+        return this.box('moof', children);
+    }
+
+    mfhd({sequenceNumber}) {
+        return this.fullBox('mfhd', 0, 0, [new Uint8Array([
+            sequenceNumber >> 24, sequenceNumber >> 16, sequenceNumber >> 8, sequenceNumber & 0xff
+        ])]);
+    }
+
+    traf(children) {
+        return this.box('traf', children);
+    }
+
+    tfhd({trackId}, flags = 0) {
+        // NOTE: doesnt't support optional fields (baseDataOffset, sampleDescriptionIndex, defaultSampleDuration, defaultSampleSize, defaultSampleFlags)
+        return this.fullBox('tfhd', 0, flags, [new Uint8Array([
+            trackId >> 24, trackId >> 16, trackId >> 8, trackId & 0xff
+        ])]);
+    }
+
+    trun({sampleCount}, flags = 0) {
+        // NOTE: doesnt't support optional fields (dataOffset, firstSampleFlags, sampleDuration, sampleSize, sampleFlags, sampleCompositionTimeOffset)
+        return this.fullBox('trun', 0, flags, [new Uint8Array([
+            sampleCount >> 24, sampleCount >> 16, sampleCount >> 8, sampleCount & 0xff
+        ])]);
+    }
+
+    // TODO: movie fragment random access
 
     mdat(data) {
         return this.box('mdat', [data]);
     }
+
+    free(data) {
+        return this.box('free', [data]);
+    }
+
+    skip(data) {
+        return this.box('skip', [data]);
+    }
+
+    udat(children) {
+        return this.box('udat', children);
+    }
+
+    cprt({language, notice}) {
+        const char1 = (language.charCodeAt(0) - 0x60) & 0x1f;
+        const char2 = (language.charCodeAt(1) - 0x60) & 0x1f;
+        const char3 = (language.charCodeAt(2) - 0x60) & 0x1f;
+
+        return this.fullBox('cprt', 0, 0, [
+            new Uint8Array([(char1 << 2) | (char2 & 0x18), ((char2 & 0x07) << 5) | char3]),
+            new Uint8Array(Buffer.from(notice, 'utf8'))
+        ]);
+    }
+
+    // TODO: metadata
 };
