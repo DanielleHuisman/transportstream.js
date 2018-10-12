@@ -99,7 +99,21 @@ export default class MuxerMP4 extends Muxer {
         ));
     }
 
-    // TODO: edit list container
+    edts(children) {
+        return this.box('edts', children);
+    }
+
+    elst(entries = []) {
+        return this.fullBox('elst ', 0, 0, [
+            new Uint8Array([entries.length >> 24, entries.length >> 16, entries.length >> 8, entries.length & 0xff]),
+            ...entries.map((entry) => new Uint8Array([
+                entry.segmentDuration >> 24, entry.segmentDuration >> 16, entry.segmentDuration >> 8, entry.segmentDuration & 0xff,
+                entry.mediaTime >> 24, entry.mediaTime >> 16, entry.mediaTime >> 8, entry.mediaTime & 0xff,
+                entry.mediaRateInteger >> 8, entry.mediaRateInteger & 0xff,
+                entry.mediaRateFraction >> 8, entry.mediaRateFraction & 0xff
+            ]))
+        ]);
+    }
 
     mdia(children) {
         return this.box('mdia', children);
@@ -192,7 +206,7 @@ export default class MuxerMP4 extends Muxer {
         return this.box('stbl', children);
     }
 
-    stts(entries) {
+    stts(entries = []) {
         return this.fullBox('stts', 0, 0, [
             new Uint8Array([entries.length >> 24, entries.length >> 16, entries.length >> 8, entries.length & 0xff]),
             ...entries.map(({sampleCount, sampleDelta}) => new Uint8Array([
@@ -202,7 +216,7 @@ export default class MuxerMP4 extends Muxer {
         ]);
     }
 
-    ctts(entries) {
+    ctts(entries = []) {
         return this.fullBox('ctts', 0, 0, [
             new Uint8Array([entries.length >> 24, entries.length >> 16, entries.length >> 8, entries.length & 0xff]),
             ...entries.map(({sampleCount, sampleOffset}) => new Uint8Array([
@@ -211,7 +225,43 @@ export default class MuxerMP4 extends Muxer {
             ]))
         ]);
     }
-    // TODO: rest of sample table box
+
+    stsc(entries = []) {
+        return this.fullBox('stsc', 0, 0, [
+            new Uint8Array([entries.length >> 24, entries.length >> 16, entries.length >> 8, entries.length & 0xff]),
+            ...entries.map(({firstChunk, samplesPerChunk, sampleDescriptionIndex}) => new Uint8Array([
+                firstChunk >> 24, firstChunk >> 16, firstChunk >> 8, firstChunk & 0xff,
+                samplesPerChunk >> 24, samplesPerChunk >> 16, samplesPerChunk >> 8, samplesPerChunk & 0xff,
+                sampleDescriptionIndex >> 24, sampleDescriptionIndex >> 16, sampleDescriptionIndex >> 8, sampleDescriptionIndex & 0xff
+            ]))
+        ]);
+    }
+
+    stsz({sampleSize, samples = []}) {
+        return this.fullBox('stsz', 0, 0, [
+            new Uint8Array([
+                sampleSize >> 24, sampleSize >> 16, sampleSize >> 8, sampleSize & 0xff,
+                samples.length >> 24, samples.length >> 16, samples.length >> 8, samples.length & 0xff
+            ]),
+            ...(sampleSize === 0 ? [] : samples.map((entrySize) => new Uint8Array([
+                entrySize >> 24, entrySize >> 16, entrySize >> 8, entrySize & 0xff
+            ])))
+        ]);
+    }
+
+    // TODO: comptact sample size box (stz2)
+
+    stco(entries = []) {
+        return this.fullBox('stsz', 0, 0, [
+            new Uint8Array([entries.length >> 24, entries.length >> 16, entries.length >> 8, entries.length & 0xff]),
+            ...entries.map((chunkOffset) => new Uint8Array([
+                chunkOffset >> 24, chunkOffset >> 16, chunkOffset >> 8, chunkOffset & 0xff
+            ]))
+        ]);
+    }
+
+    // TODO: large chunk offset box (co64)
+    // TODO: rest of sample table box (stss, stsh, padb, stdp, sdtp, sbgp, sgpd, subs)
 
     // TODO: movie extends box
     // TODO: IPMP control box
