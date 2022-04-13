@@ -26,12 +26,16 @@ const ffprobe = require('ffprobe');
 
         const channelsWithSubtitles = [];
         for (const channel of channels) {
+            if (channel.name.indexOf('Starz') !== -1 || channel.name.indexOf('Box Russia') !== -1 || channel.name.indexOf('Travel Channel') !== -1) {
+                continue;
+            }
+
             try {
                 console.log('probing', channel.name, channel.hd ? 'HD' : '', `(${channel.address})`);
                 const info = await ffprobe(`http://noc-cmk.vck.utwente.nl:6969/udp/${channel.address}`, {path: '/usr/bin/ffprobe'});
 
                 for (const stream of info.streams) {
-                    console.log(stream.index, stream.codec_type, stream.codec_name, stream.codec_long_name);
+                    console.log(stream.index, stream.codec_type, stream.codec_name, stream.codec_long_name, stream.tags ? stream.tags.language : '<unknown language>');
 
                     if (stream.codec_name === 'dvb_subtitle') {
                         channelsWithSubtitles.push(channel);
